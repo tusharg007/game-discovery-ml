@@ -15,7 +15,7 @@ UCSD McAuley Lab, *Steam Video Game and Bundle Data*, full review interactions a
 - Both local SHA-256 values matched the pinned repository's API-provided LFS SHA-256 values. This verifies the downloaded bytes against that mirror revision; byte identity with the publisher files has not been independently established.
 - Exact requested URLs, redirect destinations (with temporary query tokens removed), bytes, local hashes, upstream digests, revision, download time and the publisher TLS failure are recorded in the ignored local `artifacts/manifests/source_manifest.json`.
 
-The publisher page asks users to cite the appropriate research reference. The current page reviewed on 2026-10-24 does not provide an explicit license or grant of redistribution rights. That does not establish permission to republish source files or derived artifacts. Resolve the applicable terms before public release; do not assign the software license to this dataset.
+The publisher page asks users to cite the appropriate research reference. Rechecked on 2026-10-25: the accessible lab dataset page still requests citation and does not provide an explicit license or grant of redistribution rights; the primary CSE page timed out during this check. That does not establish permission to republish source files or derived artifacts. Resolve the applicable terms before public release; do not assign the software license to this dataset.
 
 ## Processed snapshot
 
