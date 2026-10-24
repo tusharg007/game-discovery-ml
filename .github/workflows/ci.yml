@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --locked --extra train --extra dev
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm audit --audit-level=high
+
+  image-smoke:
+    runs-on: ubuntu-latest
+    env:
+      GAME_DISCOVERY_CI_FIXTURE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --locked --extra dev
+      - run: uv run python scripts/build_ci_fixture.py
+      - run: docker build -t game-discovery:ci .
+      - name: Run and smoke-test the synthetic fixture image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name game-discovery-ci -p 127.0.0.1:18080:8000 game-discovery:ci
+          trap 'docker rm -f game-discovery-ci >/dev/null 2>&1 || true' EXIT
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:18080/readyz > /tmp/ready.json; then break; fi
+            sleep 2
+          done
+          grep -q 'synthetic-ci-fixture-v1' /tmp/ready.json
+          curl --fail --silent http://127.0.0.1:18080/ | grep -q 'Game Discovery'
+          test "$(curl --silent -o /tmp/events.json -w '%{http_code}' -X POST http://127.0.0.1:18080/v1/events -H 'content-type: application/json' -d '{}')" = 503
+          grep -q 'false' /tmp/events.json
+
+  artifact-hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify private and data files are absent from Git
+        run: python scripts/verify_public_tree.py

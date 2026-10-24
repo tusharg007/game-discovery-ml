@@ -26,6 +26,10 @@ web/node_modules/
 *.pem
 *.key
 
+# Local Azure parameters may contain project-specific deployment values
+/deploy/azure/parameters.local.json
+/.az-cli-validation/
+
 # Model outputs are ignored until an explicitly approved compact release artifact is reviewed
 /models/**
 !/models/.gitkeep

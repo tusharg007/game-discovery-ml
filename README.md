@@ -1,42 +1,59 @@
 # Game Discovery
 
-Game Discovery is a research and demo project for ranking historically observed Steam review interactions. Visitors will choose games they are interested in and see unseen games ranked with explanations grounded in model scores or catalog attributes.
+Game Discovery is a research demo that helps visitors find historically related Steam games from a few titles they already know. It searches a historical catalog, ranks unseen games, explains recommendations, and compares popularity, collaborative filtering, and the selected hybrid on the same input.
 
-The prediction target is a **future review interaction**. A review is evidence of interaction, not proof that its author liked the game. The system does not predict purchases, enjoyment, retention or playtime growth. Catalog metadata and any prices are historical snapshots, not a current storefront.
+**Live demo:** none. The application has been run locally in Docker and checked in a browser; no cloud URL has been verified. Last local browser check: 2026-10-25.
 
-## Project status
+## Screenshots
 
-M0 through M5 are implemented locally: real data preparation, chronological evaluation, CPU model comparisons, a frozen validation selection, an item-only refit bundle, one final-test run and a containerized FastAPI/browser app. The static-metadata/content candidate beat recent popularity on the single final-test window, with the limitations in [EVALUATION.md](EVALUATION.md). Anonymous feedback is intentionally disabled because no durable store is configured. No cloud deployment is claimed. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for evidence and remaining gates.
+Recommendation and model-comparison screenshots are not published. The source dataset’s redistribution permission remains unresolved, so the repository keeps derived application evidence local. The local interface has been inspected against real model outputs; evaluation numbers and behavior are described here and in [EVALUATION.md](EVALUATION.md).
 
-M6 adds local signed-feedback storage tests, synthetic drift replay, and promotion/rejection/rollback checks. Cloud feedback remains disabled: the read-only Azure account preflight did not confirm a protected student offer or spending limit, and alternate provider CLIs are unavailable.
+## Data and target
 
-## Planned local setup
+The source is the UCSD McAuley Lab Steam Video Game and Bundle Data, retrieved from the pinned Hugging Face mirror after the publisher host failed normal TLS verification. The complete compressed review file was 1,338,063,248 bytes and yielded 7,793,069 valid timestamped events. A stable user-hash portfolio sample retained 267,534 events for 100,134 username-proxy identities across 9,792 items. A review means someone interacted enough to write a review; it does not show that they liked the game. The model predicts a future review interaction, not purchase, enjoyment, retention, or playtime growth. Catalog metadata is historical and has no guaranteed as-of date. Provenance and the open reuse question are in [DATA_CARD.md](DATA_CARD.md).
 
-The project targets Python 3.11 and `uv`; Docker Desktop is available for local container work:
+## Offline results
+
+The global whole-date windows use cutoffs 2017-01-28 and 2017-08-22. The warm catalog contains items observed before each prediction cutoff, and every compared model shares the same users and candidate set. The final test was run once after validation selection was frozen.
+
+| Candidate | Warm NDCG@10 | Comparison |
+|---|---:|---|
+| Global popularity | 0.04021 validation | Validation baseline |
+| Recent 30-day popularity | 0.05146 validation; 0.02769 test | Validation baseline and test comparator |
+| Selected content + recent-popularity rank fusion | 0.05317 validation; 0.05152 test | 10% static content rank + 90% recent-30-day rank |
+
+On the final test, selected-candidate difference versus recent popularity was +0.02383 (95% paired user-bootstrap interval +0.02106 to +0.02674, 10,556 warm users). There were 25,193 future-target users overall; unreachable items and users without history are counted in the all-target view. This is one historical window, with a static-metadata caveat. Evaluation reports include coverage, tail exposure and cohort limitations. **Serving latency is not measured.** There is no live link or cloud capacity result.
+
+## Architecture and model
+
+See [ARCHITECTURE.md](ARCHITECTURE.md). Training and exact candidate ranking run on CPU. For this compact eligible catalog, exact scoring keeps candidate construction explicit and avoids the operational and indexing cost of an approximate nearest-neighbor service. The selected release bundle contains item-side catalog features and popularity data, with no user histories or factors. The method and intended-use limits are in [MODEL_CARD.md](MODEL_CARD.md).
+
+The data pipeline streams bounded records, validates and deduplicates earliest user-item interactions, and fits each comparison using only the permitted historical window. Interaction imbalance means popularity dominates exposure; the content component increases tail exposure modestly, but does not remove popularity bias. A review is not a verified like, and the historical metadata snapshot is not time aligned.
+
+## Model lifecycle and deployment
+
+Local synthetic drift replay, a validation-only candidate rejection, and synthetic promotion/rollback checks are saved in ignored reports. These are demonstrations, not real-user monitoring. Feedback is visibly disabled in the app because there is no durable event store. The local rate limiter is process scoped and not a billing cap.
+
+An Azure Container Apps template and PowerShell/Bash wrappers are locally authored, with a narrow resource allowlist and explicit destructive flag. They have not been applied. The account check did not establish a protected free offer or spending limit; GCP/AWS eligibility is unverified. The container uses a local image digest, not a published registry digest. See [DEPLOYMENT.md](DEPLOYMENT.md), [COSTS.md](COSTS.md), and [RUNBOOK.md](RUNBOOK.md) for status and shutdown procedure.
+
+## Reproduce locally
+
+Requires Python 3.11, `uv`, Node 22 for frontend work, Docker Desktop for the app image, and sufficient disk for the source data. The full local data and model artifacts are intentionally ignored by Git.
 
 ```powershell
 uv sync --extra train --extra dev
 uv run game-discovery doctor
+./scripts/reproduce.ps1 -Download
 ```
 
-Training and dev dependencies are recorded in `uv.lock`. The local commands above are available in the implementation environment.
-
-## Data and attribution
-
-The intended source is the UCSD McAuley Lab Steam Video Game and Bundle Data. Consult [DATA_CARD.md](DATA_CARD.md) for provenance, limitations and the unresolved redistribution permission review. Raw reviews, usernames, profile URLs, full histories and private mappings must not be committed.
-
-## Run the local app
-
-The Docker build compiles the TypeScript/Vite interface and installs the locked, inference-only Python dependencies. It expects the local release bundle, ALS comparison sidecar and saved test aggregate created by the M4 workflow; those artifacts remain ignored and are not included in Git.
+The resume stages are `-From data|split|train|validation|export`. The script intentionally does not rerun the one-time final test. Review the provenance and data-use gate before acquiring or publishing derived artifacts. Build the local app after the M4 bundle, ALS comparison and saved aggregate are present:
 
 ```powershell
 docker build -t game-discovery:local .
 docker run --rm -p 127.0.0.1:8000:8000 game-discovery:local
 ```
 
-Open `http://127.0.0.1:8000`. API documentation is available at `/docs`. The app exposes catalog search, same-profile champion/popularity/ALS comparison, explanations and charts read from the saved final-test JSON. `/v1/events` returns HTTP 503 with `persisted: false`; feedback is not stored. `/metrics` is local-only by default.
-
-For a fresh checkout, create the local artifacts by following the commands and gates in [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md). Do not publish the derived bundle or evaluation files until the source data redistribution review in [DATA_CARD.md](DATA_CARD.md) is resolved.
+CI runs Python tests and lint/format checks, frontend typecheck/build/audit, a Docker startup/API smoke against a separately generated synthetic bundle, and tracked-file privacy hygiene. It does not download the full dataset or run the frozen final test. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for exact commands, hashes and milestone evidence.
 
 ## Non-affiliation
 

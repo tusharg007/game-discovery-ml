@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "nameSuffix": { "value": "<unique-suffix>" },
+    "location": { "value": "<preflight-approved-region>" },
+    "imageReference": { "value": "<registry>/<image>@sha256:<digest>" },
+    "gitCommit": { "value": "<git-commit-sha>" },
+    "modelSha256": { "value": "<64-character-model-sha256>" }
+  }
+}

@@ -110,3 +110,25 @@ Completed locally on 2026-10-25:
 ## Evidence integrity
 
 No cloud resource IDs, actual cloud costs, deployment URL or cloud verification are claimed. A live browser smoke was visually inspected against actual local model and evaluation outputs.
+
+### M7 — Cloud deployment (templates only; account gate blocks provisioning)
+
+- Added an Azure Bicep template for one Consumption Container Apps environment and one app, plus PowerShell and Bash preflight/plan/deploy/verify/rollback/destroy commands. The resource allowlist is project resource group + `Microsoft.App/managedEnvironments` + `Microsoft.App/containerApps`; no registry, storage, analytics workspace, VNet, Key Vault, or custom domain is created. The template uses scale-to-zero bounds (0–1), 0.25 vCPU/0.5 GiB, single revision, HTTPS ingress, no persistent log ingestion, digest-pinned images, and disabled feedback.
+- Deployment and rollback require explicit mutation flags. Destroy requires a separate confirmation and validates project ownership tags and resource types before deleting project resources. Bash destroy is likewise scoped by tags and type. The plan mode is non-mutating and prints the allowlist; Azure `what-if` runs only if the named resource group already exists.
+- No cloud mutation was run. The existing read-only Azure evidence does not confirm a protected student offer or spending limit; GCP/AWS eligibility is unverified. Template is locally authored, not cloud validated. Azure event storage is deliberately omitted while durable feedback remains gated. No HTTPS URL, external smoke, cloud load, rollback, or cloud cost evidence exists.
+- The local deploy wrappers fail closed unless the cost-preflight JSON affirmatively records a protected free gate. The current ignored preflight fails that gate. This gate does not establish account eligibility by itself; evidence must be verified before use.
+
+### M8 — Portfolio release (local docs and CI authored; final audit remains account/data gated)
+
+- Added a model card, deployment status/procedure, local runbook, architecture diagram, fresh reproduction wrapper with stage resume, Git-tracked data/secret hygiene check, and CI for Python tests/Ruff, frontend typecheck/build/audit, and tracked-file hygiene. The image job builds a separately generated synthetic bundle and smoke-checks container readiness, UI HTML and disabled feedback; its fixture generator refuses to run without an explicit CI-only environment flag. CI does not pull the private dataset, release model, or final-test report.
+- Expanded README with product purpose, live-link status, evaluation table, data counts, limits, reproduction instructions, monitoring and deployment status. No screenshots or derived figures were committed because redistribution permission is unresolved. The final-test report is left intact and was not rerun.
+- Current verification for these changes: Python test suite 36 passed; Ruff check passed; Ruff format initially identified the new hygiene script, which was formatted and rechecked; frontend CI is authored but could not be rerun in the present host session because the npm shim points to a missing npm installation. M6 frontend checks had passed in the locked Node container. Bicep is not cloud validated. Fresh-clone CI has not run on GitHub.
+- Remaining release work: resolve source/data publication permissions before publishing screenshots or derived figures; obtain an eligible protected zero-spend cloud account to complete M7 and the cloud event store; run a fresh-clone CI workflow; generate permitted figures and screenshots; perform a final clean-tree/evidence audit. No measured request latency or production traffic is claimed.
+
+## Current blockers and next actions
+
+1. Owner must provide access to an Azure for Students account with its spending limit enabled, or an otherwise approved provider account with verified $0 out-of-pocket protection. Do not share credentials in chat; use the signed-in CLI/session. Until verified, do not deploy.
+2. Resolve the source dataset redistribution/reuse permission. Keep raw data, model bundles, test-level outputs, screenshots, and reports local/ignored until this is resolved.
+3. Once those gates pass, complete the cloud adapter/restart persistence proof, deploy exactly one provider, run bounded smoke/load and rollback, and document actual resource and credit use.
+4. Run the CI workflow from a fresh clone and complete the release evidence audit. Never rerun the one-time final test or use it to promote/reselect a candidate.
+- Template validation detail: PowerShell parser validation passed. The local Azure CLI could not bootstrap its Bicep compiler (it produced a locked zero-byte executable), so Bicep compilation and Azure `what-if` remain unverified. The host npm shim also points to a missing `npm-cli.js`; M6 frontend build/audit evidence remains valid, while the newly authored CI workflow has not run on GitHub.
