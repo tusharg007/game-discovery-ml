@@ -4,11 +4,11 @@ Game Discovery is a research demo that helps visitors find historically related 
 
 **Live demo:** none. The application has been run locally in Docker and checked in a browser; no cloud URL has been verified. Last local browser check: 2026-10-25.
 
-Source: [private code-only GitHub repository](https://github.com/tusharg007/game-discovery-ml). Real model/catalog assets remain local.
+Source: [private code-only GitHub repository](https://github.com/tusharg007/game-discovery-ml). Raw data and user records remain private; the separately published serving image contains only item artifacts, the historical catalog and aggregate evaluation. See [data sources and citations](ATTRIBUTION.md).
 
 ## Screenshots
 
-Recommendation and model-comparison screenshots are not published. The source dataset’s redistribution permission remains unresolved, so the repository keeps derived application evidence local. The local interface has been inspected against real model outputs; evaluation numbers and behavior are described here and in [EVALUATION.md](EVALUATION.md).
+The local interface has been inspected against real model outputs; evaluation numbers and behavior are described here and in [EVALUATION.md](EVALUATION.md). Screenshots have not yet been published.
 
 ## Data and target
 
@@ -36,7 +36,7 @@ The data pipeline streams bounded records, validates and deduplicates earliest u
 
 Local synthetic drift replay, a validation-only candidate rejection, and synthetic promotion/rollback checks are saved in ignored reports. These are demonstrations, not real-user monitoring. Feedback is visibly disabled in the app because there is no durable event store. The local rate limiter is process scoped and not a billing cap.
 
-Render Free is the selected hosting route. The actual app passed a local 45-request smoke at 0.1 CPU under a 512 MB memory cap; measured peak memory was about 171 MB, including the smoke client. The signed-in Render account is Hobby with no card on file. An allowlisted release packager and image-backed Blueprint generator are ready, but the real-data model/catalog remain local until the data-use gate is resolved. There is no live Render URL or cloud benchmark. Azure templates remain an unused alternative. See [DEPLOYMENT.md](DEPLOYMENT.md), [COSTS.md](COSTS.md), and [RUNBOOK.md](RUNBOOK.md) for status and shutdown procedure.
+Render Free is the selected hosting route. The actual app passed a local 45-request smoke at 0.1 CPU under a 512 MB memory cap; measured peak memory was about 171 MB, including the smoke client. The signed-in Render account is Hobby with no card on file. On 2026-10-25 the owner explicitly authorized the limited inference deployment after reviewing the source-terms uncertainty; this does not assign a license to the dataset. The allowlisted bundle excludes raw and user-level data. Deployment is in progress; there is no verified Render URL or cloud benchmark yet. Azure templates remain an unused alternative. See [DEPLOYMENT.md](DEPLOYMENT.md), [COSTS.md](COSTS.md), and [RUNBOOK.md](RUNBOOK.md) for status and shutdown procedure.
 
 ## Reproduce locally
 

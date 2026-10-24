@@ -4,9 +4,9 @@ Updated: 2026-10-25 (Asia/Calcutta)
 
 Source plan: `E:\Game Discovery\GAME_DISCOVERY_IMPLEMENTATION_PLAN.md` (kept outside this separate repository).
 
-## Current milestone: M7 — Render preparation (local checks passed; data publication gated)
+## Current milestone: M7 — Render deployment (limited serving publication authorized)
 
-M0–M5 have passed locally. M3 selection was frozen before the single M4 final-test run. Local M6 monitoring and promotion work is implemented. On 2026-10-25 the owner selected Render Free; its signed-in Hobby workspace has no card on file. The actual app passed the local Render resource-cap smoke. The owner confirmed no additional data-use permission was obtained, so real model/catalog assets remain local. Feedback is disabled and no cloud deployment is claimed.
+M0–M5 have passed locally. M3 selection was frozen before the single M4 final-test run. Local M6 monitoring and promotion work is implemented. On 2026-10-25 the owner selected Render Free; its signed-in Hobby workspace has no card on file. The actual app passed the local Render resource-cap smoke. Following discussion of the source-terms uncertainty, the owner explicitly authorized deploying the item-only model, historical catalog and aggregate statistics with source attribution. Raw data and user records remain private. This changes the earlier publication hold for the serving bundle only and does not establish a dataset license. Feedback is disabled; deployment verification is pending. Historical entries below describe the decisions at their recorded stage; this current decision supersedes their publication hold.
 
 ## M0 — Bootstrap
 
@@ -102,10 +102,10 @@ Completed locally on 2026-10-25:
 
 ### Selected Render route
 
-- Render Hobby/no-card account eligibility is verified; use one Free web service after the data-use gate is resolved.
+- Render Hobby/no-card account eligibility is verified; recheck before creating one Free web service for the owner-authorized serving bundle.
 - Keep feedback disabled for the first Render launch. An external durable store with 30-day expiry and replacement/duplicate verification is a separate incomplete lifecycle capability.
 - The local drift replay, promotion/rejection and rollback mechanisms are complete; do not use M4 test outcomes to retrain or change selection.
-- Keep the data redistribution review open; do not publish data-derived artifacts until it is resolved.
+- Keep source-terms uncertainty documented and exclude raw data and user records. The owner-authorized serving scope is recorded in `DATA_CARD.md`.
 
 ## Evidence integrity
 
@@ -127,10 +127,10 @@ No cloud resource IDs, actual cloud costs, deployment URL or cloud verification 
 
 ## Current blockers and next actions
 
-1. Resolve the source dataset public-use question in plan section 3.3. The owner confirmed no additional permission has been obtained. Keep the real-data serving archive/image local until the applicable terms or permission are established.
+1. The owner explicitly authorized limited serving publication on 2026-10-25 after reviewing uncertain source terms. Keep raw reviews, user records and training artifacts private; include publisher links and research citations.
 2. Render is selected and signed in; Azure academic verification is no longer a launch dependency. Recheck the no-card Hobby account and select exactly one Free web service before deployment.
-3. After data permission is resolved, publish the approved image, record its registry digest, create the Render service, and verify HTTPS, model identity, UI, bounded traffic, rollback and actual costs. Feedback remains disabled unless external durable storage is separately configured and tested.
-4. Code-only fresh-checkout checks passed locally, including a locked Linux environment and synthetic container startup/API smoke. Hosted GitHub Actions remains disabled until its billing allowance is verified. Complete the cloud release evidence audit after the data-use gate is resolved. Never rerun the one-time final test or use it to promote/reselect a candidate.
+3. Publish the limited serving image, record its registry digest, create the Render service, and verify HTTPS, model identity, UI, bounded traffic, rollback and actual costs. Feedback remains disabled unless external durable storage is separately configured and tested.
+4. Code-only fresh-checkout checks passed locally, including a locked Linux environment and synthetic container startup/API smoke. Hosted GitHub Actions remains disabled until its billing allowance is verified. Complete the cloud release evidence audit after deployment. Never rerun the one-time final test or use it to promote/reselect a candidate.
 - Template validation detail: PowerShell parser validation passed. The local Azure CLI could not bootstrap its Bicep compiler (it produced a locked zero-byte executable), so Bicep compilation and Azure `what-if` remain unverified. The host npm shim also points to a missing `npm-cli.js`; M6 frontend build/audit evidence remains valid, while the newly authored CI workflow has not run on GitHub.
 - Rechecked the publisher lab dataset page on 2026-10-25: it still requests citation but provides no explicit redistribution license on the accessible page; the primary CSE dataset page timed out. Updated [DATA_CARD.md](DATA_CARD.md); derived publication rights remain unresolved.
 

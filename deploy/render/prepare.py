@@ -1,7 +1,7 @@
 """Stage the exact item-only release locally; optionally generate an image-backed Blueprint.
 
-This script never uploads assets or changes a Render account. Publication remains gated by
-the unresolved permission recorded in DATA_CARD.md.
+This script never uploads assets or changes a Render account. DATA_CARD.md records the
+owner's limited serving-publication decision and the uncertainty in source terms.
 """
 
 from __future__ import annotations
@@ -113,7 +113,9 @@ def stage_assets(root: Path, output_dir: Path) -> dict:
     descriptor = {
         "provider": "render",
         "compute_plan": "free",
-        "publication_gate": "unresolved; local staging only",
+        "publication_scope": "item-only inference; see DATA_CARD.md for terms and owner decision",
+        "source_dataset_included": False,
+        "user_level_data_included": False,
         "model_version": manifest["model_version"],
         "split_manifest_sha256": manifest["split_manifest_sha256"],
         "feedback_enabled": False,

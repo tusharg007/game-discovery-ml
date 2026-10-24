@@ -55,7 +55,8 @@ def test_render_staging_excludes_private_files_and_is_repeatable(tmp_path: Path)
     first = PREPARE["stage_assets"](root, output)
     second = PREPARE["stage_assets"](root, output)
     assert first["archive_sha256"] == second["archive_sha256"]
-    assert first["publication_gate"] == "unresolved; local staging only"
+    assert first["source_dataset_included"] is False
+    assert first["user_level_data_included"] is False
     with zipfile.ZipFile(output / "render_release_assets.zip") as archive:
         assert set(archive.namelist()) == set(PREPARE["ASSETS"])
         assert not any(path.startswith("private/") for path in archive.namelist())

@@ -1,6 +1,6 @@
 # Render Free deployment
 
-Status: local preparation and resource checks complete; no live Render service. The owner selected Render on 2026-10-25. The signed-in dashboard shows a Hobby workspace, no card on file, and $0 accrued charges. The remaining source-data publication gate is recorded in `DATA_CARD.md`; the owner confirmed that no additional permission has been obtained. Real serving assets remain local.
+Status: limited inference deployment authorized and in progress; no verified live Render service yet. The owner selected Render on 2026-10-25. The signed-in dashboard shows a Hobby workspace, no card on file, and $0 accrued charges. The owner explicitly authorized publishing the item model, historical catalog and aggregate statistics while retaining raw data and user records privately. `DATA_CARD.md` records this decision and source-terms uncertainty; no publisher permission or permissive license is claimed.
 
 ## Resource plan
 
@@ -23,11 +23,11 @@ docker build --platform linux/amd64 -t game-discovery:render .
 docker run --rm --name game-discovery-render-check --memory 512000000 --memory-swap 512000000 --cpus 0.1 -e PORT=10000 -p 127.0.0.1:18081:10000 game-discovery:render
 ```
 
-`prepare.py` verifies the champion and ALS hashes/privacy flags, checks the saved test report's split identity, and creates an allowlisted archive and hash manifest in ignored `artifacts/deployment`. It never uploads anything and does not rerun evaluation. The archive is for local review until the data-use gate is resolved.
+`prepare.py` verifies the champion and ALS hashes/privacy flags, checks the saved test report's split identity, and creates an allowlisted archive and hash manifest in ignored `artifacts/deployment`. It never uploads anything and does not rerun evaluation. Staging itself does not establish a dataset license; the owner decision and attribution are documented separately.
 
 With the container running, use `scripts/smoke_http.py` against the local service. It checks readiness/model identity, static assets, popular/tail/cold/unknown profiles, 20-seed requests, all three model modes, duplicate/seed exclusions, and truthful rejection of disabled feedback. It makes 45 requests within a shared 60-second deadline, with maximum concurrency 5, using synthetic visitor inputs against the real bundle. This is a bounded functional smoke, not a cloud latency benchmark.
 
-## Publish and launch after the data-use gate is resolved
+## Publish and launch the authorized serving bundle
 
 1. Build/recheck the exact runtime image, then publish it to a user-controlled registry. Keep raw data, private events and training artifacts out of the image. This repo's code-only GitHub checkout cannot build the real-data image: release assets are deliberately ignored. Use the local verified build context rather than silently replacing the model with fixtures.
 2. Record the **registry manifest digest** returned by the push. A Docker local image ID is not a substitute for a pushed registry digest. Retain the previous image digest for rollback.

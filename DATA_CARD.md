@@ -2,7 +2,7 @@
 
 ## Status
 
-Local research processing is complete for the full files and a stable-hash portfolio sample. Redistribution and public-deployment permission for source data and derived artifacts remain unresolved. Raw files, per-user data, identity mappings and model inputs stay local and ignored by Git; do not publish them until the applicable permission is resolved.
+Local research processing is complete for the full files and a stable-hash portfolio sample. On 2026-10-25, after discussing the uncertain published reuse terms, the owner explicitly authorized public deployment of the limited inference application: item model factors/features, a historical game catalog, aggregate popularity counts and aggregate evaluation. This updates the earlier plan section 3.3 hold for this serving bundle only. Raw reviews, usernames, user histories, identity mappings, user factors and private events remain local and ignored by Git.
 
 ## Intended source and provenance
 
@@ -15,7 +15,7 @@ UCSD McAuley Lab, *Steam Video Game and Bundle Data*, full review interactions a
 - Both local SHA-256 values matched the pinned repository's API-provided LFS SHA-256 values. This verifies the downloaded bytes against that mirror revision; byte identity with the publisher files has not been independently established.
 - Exact requested URLs, redirect destinations (with temporary query tokens removed), bytes, local hashes, upstream digests, revision, download time and the publisher TLS failure are recorded in the ignored local `artifacts/manifests/source_manifest.json`.
 
-The publisher page asks users to cite the appropriate research reference. Rechecked on 2026-10-25: the accessible lab dataset page still requests citation and does not provide an explicit license or grant of redistribution rights; the primary CSE page timed out during this check. That does not establish permission to republish source files or derived artifacts. Resolve the applicable terms before public release; do not assign the software license to this dataset.
+The publisher page asks users to cite the appropriate research reference. Rechecked on 2026-10-25: no explicit public-deployment prohibition was found on the accessible lab dataset page, and no explicit permissive redistribution license was established; the primary CSE page timed out. These are uncertain terms, not evidence of a deployment ban. The owner has not obtained additional publisher permission and chose the limited serving deployment above. That owner decision does not establish a dataset license. The software license does not apply to source data, and attribution is not presented as a redistribution grant. See [ATTRIBUTION.md](ATTRIBUTION.md) for source links and citations.
 
 ## Processed snapshot
 
@@ -46,4 +46,4 @@ The primary label is a timestamped review interaction. It is not a verified posi
 
 ## Required processing evidence
 
-Created locally: `source_manifest.json`, `data_quality.json`, `dataset_stats.json`, `preparation_manifest.json` and `data_profile.html`. The temporal split manifest is still required before model evaluation. These current artifacts remain ignored/local until publication permissions are resolved.
+Created locally: `source_manifest.json`, `data_quality.json`, `dataset_stats.json`, `preparation_manifest.json`, `data_profile.html` and the frozen temporal split manifest. Detailed processing artifacts remain ignored/local. Only the explicitly authorized serving bundle and saved aggregate evaluation enter the runtime image; the frozen final test is not rerun for deployment.

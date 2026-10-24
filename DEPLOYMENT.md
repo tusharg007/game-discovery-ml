@@ -4,7 +4,7 @@
 
 The owner selected **Render Free** on 2026-10-25. The signed-in workspace is Hobby, with no card on file and available shared free usage. The exact real-data app passed a local 45-request smoke at 0.1 CPU and a 512,000,000-byte memory limit with no swap. Peak cgroup memory, including the smoke client, was 170,541,056 bytes. This verifies local feasibility; no Render service or HTTPS deployment exists yet.
 
-See [the Render deployment procedure](deploy/render/README.md). Serving assets are hash-verified and staged in an ignored local archive. The owner confirmed no additional data-use permission has been obtained, so `DATA_CARD.md`'s publication gate remains open and the real-data image has not been uploaded. The generated Blueprint requires an actual pushed registry image digest; no local image ID is presented as a registry digest. Feedback remains disabled.
+See [the Render deployment procedure](deploy/render/README.md). Serving assets are hash-verified and staged in an ignored local archive. On 2026-10-25 the owner explicitly authorized publication of the item-only inference bundle and historical catalog while keeping raw data and user records private. [DATA_CARD.md](DATA_CARD.md) records this change to the earlier publication hold and the unresolved source-terms uncertainty. The generated Blueprint requires an actual pushed registry image digest; no local image ID is presented as a registry digest. Feedback remains disabled.
 
 ## Azure template (retained alternative)
 
