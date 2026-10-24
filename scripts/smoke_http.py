@@ -13,14 +13,19 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 
-def request(base: str, path: str, payload: dict | None = None) -> tuple[int, object, float]:
+def request(
+    base: str, path: str, payload: dict | None = None, *, deadline: float | None = None
+) -> tuple[int, object, float]:
+    remaining = 15.0 if deadline is None else min(15.0, deadline - time.perf_counter())
+    if remaining <= 0:
+        raise TimeoutError("The 60-second HTTP smoke budget is exhausted")
     body = None if payload is None else json.dumps(payload).encode()
     req = urllib.request.Request(
         base + path, data=body, headers={"Content-Type": "application/json"}
     )
     started = time.perf_counter()
     try:
-        response = urllib.request.urlopen(req, timeout=15)
+        response = urllib.request.urlopen(req, timeout=remaining)
     except urllib.error.HTTPError as exc:
         response = exc
     with response:
@@ -39,6 +44,12 @@ def require(condition: bool, message: str) -> None:
 
 
 def smoke(base: str, expected_version: str, expected_catalog: str) -> dict:
+    started = time.perf_counter()
+    deadline = started + 60.0
+
+    def fetch(path: str, payload: dict | None = None) -> tuple[int, object, float]:
+        return request(base, path, payload, deadline=deadline)
+
     parsed = urllib.parse.urlsplit(base)
     require(
         parsed.scheme == "https" or parsed.hostname in {"127.0.0.1", "localhost"},
@@ -50,20 +61,20 @@ def smoke(base: str, expected_version: str, expected_catalog: str) -> dict:
     )
     count = 0
     for path in ("/healthz", "/readyz", "/", "/static/assets/app.js", "/static/assets/index.css"):
-        status, data, _ = request(base, path)
+        status, data, _ = fetch(path)
         count += 1
         require(status == 200, f"{path}: expected HTTP 200, got {status}")
         if path == "/readyz":
             require(data["model_version"] == expected_version, "Unexpected model version")
             require(data["catalog_version"] == expected_catalog, "Unexpected catalog version")
-    status, info, _ = request(base, "/v1/model-info")
+    status, info, _ = fetch("/v1/model-info")
     count += 1
     require(status == 200 and info["feedback"]["enabled"] is False, "Feedback must be disabled")
-    status, catalog, _ = request(base, "/v1/catalog?limit=20")
+    status, catalog, _ = fetch("/v1/catalog?limit=20")
     count += 1
     require(status == 200 and len(catalog["items"]) == 20, "Expected at least 20 catalog items")
     ids = [row["item_id"] for row in catalog["items"]]
-    status, tail, _ = request(base, "/v1/catalog?limit=20&sort=tail")
+    status, tail, _ = fetch("/v1/catalog?limit=20&sort=tail")
     count += 1
     require(status == 200, "Tail catalog request failed")
     tail_ids = [row["item_id"] for row in tail["items"]]
@@ -71,8 +82,8 @@ def smoke(base: str, expected_version: str, expected_catalog: str) -> dict:
 
     def check_case(case: tuple[str, list[str]]) -> dict:
         model, seeds = case
-        status, data, elapsed = request(
-            base, "/v1/recommendations", {"model": model, "seed_item_ids": seeds, "k": 20}
+        status, data, elapsed = fetch(
+            "/v1/recommendations", {"model": model, "seed_item_ids": seeds, "k": 20}
         )
         require(status == 200, f"Recommendation failed: {model} HTTP {status}")
         recommendations = data["recommendations"]
@@ -103,7 +114,7 @@ def smoke(base: str, expected_version: str, expected_catalog: str) -> dict:
     with ThreadPoolExecutor(max_workers=5) as pool:
         results.extend(pool.map(check_case, cases))
     count += len(cases)
-    status, event, _ = request(base, "/v1/events", {})
+    status, event, _ = fetch("/v1/events", {})
     count += 1
     require(
         status == 503 and event.get("persisted") is False,
@@ -117,6 +128,8 @@ def smoke(base: str, expected_version: str, expected_catalog: str) -> dict:
         "model_version": expected_version,
         "catalog_version": expected_catalog,
         "request_count": count,
+        "time_budget_seconds": 60,
+        "duration_seconds": time.perf_counter() - started,
         "maximum_concurrency": 5,
         "feedback_writes": 0,
         "passed": True,

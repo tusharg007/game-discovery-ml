@@ -4,6 +4,8 @@ Game Discovery is a research demo that helps visitors find historically related 
 
 **Live demo:** none. The application has been run locally in Docker and checked in a browser; no cloud URL has been verified. Last local browser check: 2026-10-25.
 
+Source: [private code-only GitHub repository](https://github.com/tusharg007/game-discovery-ml). Real model/catalog assets remain local.
+
 ## Screenshots
 
 Recommendation and model-comparison screenshots are not published. The source dataset’s redistribution permission remains unresolved, so the repository keeps derived application evidence local. The local interface has been inspected against real model outputs; evaluation numbers and behavior are described here and in [EVALUATION.md](EVALUATION.md).
@@ -22,7 +24,7 @@ The global whole-date windows use cutoffs 2017-01-28 and 2017-08-22. The warm ca
 | Recent 30-day popularity | 0.05146 validation; 0.02769 test | Validation baseline and test comparator |
 | Selected content + recent-popularity rank fusion | 0.05317 validation; 0.05152 test | 10% static content rank + 90% recent-30-day rank |
 
-On the final test, selected-candidate difference versus recent popularity was +0.02383 (95% paired user-bootstrap interval +0.02106 to +0.02674, 10,556 warm users). There were 25,193 future-target users overall; unreachable items and users without history are counted in the all-target view. This is one historical window, with a static-metadata caveat. Evaluation reports include coverage, tail exposure and cohort limitations. **Serving latency is not measured.** There is no live link or cloud capacity result.
+On the final test, selected-candidate difference versus recent popularity was +0.02383 (95% paired user-bootstrap interval +0.02106 to +0.02674, 10,556 warm users). There were 25,193 future-target users overall; unreachable items and users without history are counted in the all-target view. This is one historical window, with a static-metadata caveat. Evaluation reports include coverage, tail exposure and cohort limitations. No serving capacity benchmark is complete. The bounded local resource smoke below does not establish cloud performance.
 
 ## Architecture and model
 
@@ -53,7 +55,7 @@ docker build -t game-discovery:local .
 docker run --rm -p 127.0.0.1:8000:8000 game-discovery:local
 ```
 
-CI runs Python tests and lint/format checks, frontend typecheck/build/audit, a Docker startup/API smoke against a separately generated synthetic bundle, and tracked-file privacy hygiene. It does not download the full dataset or run the frozen final test. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for exact commands, hashes and milestone evidence.
+The CI workflow defines Python tests and lint/format checks, frontend typecheck/build/audit, a Docker startup/API smoke against a separately generated synthetic bundle, and tracked-file privacy hygiene. Equivalent checks passed locally from a fresh clone with locked dependencies and the documented Linux OpenMP prerequisite. Hosted GitHub Actions is disabled until its billing allowance is verified. CI does not download the full dataset or run the frozen final test. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for exact commands, hashes and milestone evidence.
 
 ## Non-affiliation
 

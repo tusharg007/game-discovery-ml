@@ -1,6 +1,6 @@
 # Render Free deployment
 
-Status: preparation in progress; no live Render service. The owner selected Render on 2026-10-25. The signed-in dashboard shows a Hobby workspace, no card on file, and $0 accrued charges. The remaining source-data publication gate is recorded in `DATA_CARD.md`; the owner confirmed that no additional permission has been obtained. Real serving assets remain local.
+Status: local preparation and resource checks complete; no live Render service. The owner selected Render on 2026-10-25. The signed-in dashboard shows a Hobby workspace, no card on file, and $0 accrued charges. The remaining source-data publication gate is recorded in `DATA_CARD.md`; the owner confirmed that no additional permission has been obtained. Real serving assets remain local.
 
 ## Resource plan
 
@@ -25,7 +25,7 @@ docker run --rm --name game-discovery-render-check --memory 512000000 --memory-s
 
 `prepare.py` verifies the champion and ALS hashes/privacy flags, checks the saved test report's split identity, and creates an allowlisted archive and hash manifest in ignored `artifacts/deployment`. It never uploads anything and does not rerun evaluation. The archive is for local review until the data-use gate is resolved.
 
-With the container running, use `scripts/smoke_http.py` against the local service. It checks readiness/model identity, static assets, popular/tail/cold/unknown profiles, 20-seed requests, all three model modes, duplicate/seed exclusions, and truthful rejection of disabled feedback. It makes 45 requests, with maximum concurrency 5, using synthetic visitor inputs against the real bundle. This is a bounded functional smoke, not a cloud latency benchmark.
+With the container running, use `scripts/smoke_http.py` against the local service. It checks readiness/model identity, static assets, popular/tail/cold/unknown profiles, 20-seed requests, all three model modes, duplicate/seed exclusions, and truthful rejection of disabled feedback. It makes 45 requests within a shared 60-second deadline, with maximum concurrency 5, using synthetic visitor inputs against the real bundle. This is a bounded functional smoke, not a cloud latency benchmark.
 
 ## Publish and launch after the data-use gate is resolved
 

@@ -13,6 +13,8 @@ Open `http://127.0.0.1:8000`. Readiness is `/health/ready`; liveness is `/health
 
 ## Validate local changes
 
+Linux training/CI environments need the OpenMP runtime used by `implicit`: on Debian/Ubuntu install `libgomp1` before running the training extra. The inference-only image does not import `implicit` and does not need that training library. GitHub CI installs this prerequisite explicitly.
+
 ```powershell
 uv sync --extra train --extra dev
 uv run pytest -q
