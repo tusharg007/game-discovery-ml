@@ -1,0 +1,9 @@
+mode: portfolio
+seed: 1729
+sampling:
+  strategy: stable_user_hash
+  fraction: null
+  target_users: 100000
+paths:
+  raw: data/raw
+  processed: data/processed

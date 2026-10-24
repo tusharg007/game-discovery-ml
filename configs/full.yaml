@@ -1,0 +1,9 @@
+mode: full
+seed: 1729
+sampling:
+  strategy: all_eligible_users
+  fraction: 1.0
+  target_users: null
+paths:
+  raw: data/raw
+  processed: data/processed

@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=75,<81"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "game-discovery-ml"
+version = "0.1.0"
+description = "Reproducible game-interest discovery from historical review interactions"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "pydantic>=2.9,<3",
+  "uvicorn[standard]>=0.32,<1",
+]
+
+[project.optional-dependencies]
+train = [
+  "duckdb>=1.1,<2",
+  "implicit>=0.7.2,<1",
+  "numpy>=2.1,<3",
+  "pandas>=2.2,<3",
+  "pyarrow>=18,<25",
+  "scikit-learn>=1.5,<2",
+  "scipy>=1.14,<2",
+]
+dev = [
+  "httpx>=0.27,<1",
+  "pytest>=8.3,<9",
+  "ruff>=0.7,<1",
+]
+
+[project.scripts]
+game-discovery = "game_discovery.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100

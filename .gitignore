@@ -1,0 +1,36 @@
+# Python environments and build products
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# Raw, processed and private user-level data
+/data/raw/**
+/data/processed/**
+/private/**
+!/data/raw/.gitkeep
+!/data/processed/.gitkeep
+!/private/mappings/.gitkeep
+!/private/events/.gitkeep
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Model outputs are ignored until an explicitly approved compact release artifact is reviewed
+/models/**
+!/models/.gitkeep
+
+# Local artifacts may contain user-level contributions or account information
+/artifacts/**
+!/artifacts/reports/.gitkeep
+!/artifacts/figures/.gitkeep
+!/artifacts/manifests/.gitkeep
+!/artifacts/deployment/.gitkeep
