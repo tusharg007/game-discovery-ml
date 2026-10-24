@@ -134,7 +134,7 @@ def smoke(base: str, expected_version: str, expected_catalog: str) -> dict:
         "feedback_writes": 0,
         "passed": True,
         "cases": results,
-        "limitation": "Small local smoke; not a cloud latency or stable tail-percentile benchmark.",
+        "limitation": "Bounded functional smoke; not a capacity or stable tail-percentile benchmark.",
     }
 
 

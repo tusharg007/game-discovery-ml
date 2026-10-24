@@ -2,7 +2,11 @@
 
 ## Current state
 
-The owner selected **Render Free** on 2026-10-25. The signed-in workspace is Hobby, with no card on file and available shared free usage. The exact real-data app passed a local 45-request smoke at 0.1 CPU and a 512,000,000-byte memory limit with no swap. Peak cgroup memory, including the smoke client, was 170,541,056 bytes. This verifies local feasibility; no Render service or HTTPS deployment exists yet.
+**Live:** [https://game-discovery-ml.onrender.com](https://game-discovery-ml.onrender.com). On 2026-10-25, one image-backed Render Free service was deployed in Singapore. The signed-in workspace is Hobby, with no card on file and available shared free usage. The initial deployment succeeded in 40.1 seconds. All 45 bounded HTTPS checks passed in 12.95 seconds, with maximum concurrency five. Browser checks verified the comparison, saved aggregate evaluation and attribution pages. Feedback remains disabled. [Release identity](deploy/render/release.json) records the source commit and immutable registry digest.
+
+The final image also passed a local 45-request smoke at 0.1 CPU and a 512,000,000-byte memory limit with no swap; peak cgroup memory was 127,758,336 bytes with the smoke client outside the container. Earlier measurement including the smoke client was 170,541,056 bytes. Render Free's dashboard gates actual memory/CPU telemetry behind a paid compute plan; no upgrade was made. The functional smoke is not a capacity benchmark.
+
+After separate owner approval, a same-image replacement deployment passed 45 HTTPS checks in 11.47 seconds. Rollback to the first successful deployment then passed 45 checks in 11.74 seconds, with unchanged model/catalog identity and disabled feedback. This tests recovery between Render deployment revisions using the same image; it does not demonstrate switching between different trained models. The service remains on the chosen digest.
 
 See [the Render deployment procedure](deploy/render/README.md). Serving assets are hash-verified and staged in an ignored local archive. On 2026-10-25 the owner explicitly authorized publication of the item-only inference bundle and historical catalog while keeping raw data and user records private. [DATA_CARD.md](DATA_CARD.md) records this change to the earlier publication hold and the unresolved source-terms uncertainty. The generated Blueprint requires an actual pushed registry image digest; no local image ID is presented as a registry digest. Feedback remains disabled.
 

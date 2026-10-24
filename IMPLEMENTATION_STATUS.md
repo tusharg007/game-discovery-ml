@@ -4,9 +4,9 @@ Updated: 2026-10-25 (Asia/Calcutta)
 
 Source plan: `E:\Game Discovery\GAME_DISCOVERY_IMPLEMENTATION_PLAN.md` (kept outside this separate repository).
 
-## Current milestone: M7 — Render deployment (limited serving publication authorized)
+## Current milestone: M7 — Render HTTPS inference and deployment revision recovery verified
 
-M0–M5 have passed locally. M3 selection was frozen before the single M4 final-test run. Local M6 monitoring and promotion work is implemented. On 2026-10-25 the owner selected Render Free; its signed-in Hobby workspace has no card on file. The actual app passed the local Render resource-cap smoke. Following discussion of the source-terms uncertainty, the owner explicitly authorized deploying the item-only model, historical catalog and aggregate statistics with source attribution. Raw data and user records remain private. This changes the earlier publication hold for the serving bundle only and does not establish a dataset license. Feedback is disabled; deployment verification is pending. Historical entries below describe the decisions at their recorded stage; this current decision supersedes their publication hold.
+M0–M5 have passed locally. M3 selection was frozen before the single M4 final-test run. Local M6 monitoring and promotion work is implemented. The application is live at https://game-discovery-ml.onrender.com on one Render Free web service in Singapore. The initial launch, a subsequent replacement and rollback to the first successful deployment each passed 45 bounded HTTPS checks on 2026-10-25. Browser comparison/evaluation/attribution checks also passed. Recovery used the same pinned image and saved model; it does not demonstrate switching trained models. The Hobby workspace retains no card and shows $0 immediate charges. Following discussion of uncertain source terms, the owner explicitly authorized the item-only model, historical catalog and aggregate statistics with source attribution. Raw data and user records remain private; no dataset license is inferred. Feedback is disabled. Historical entries below describe decisions at their recorded stage; this current decision supersedes their publication hold.
 
 ## M0 — Bootstrap
 
@@ -102,14 +102,14 @@ Completed locally on 2026-10-25:
 
 ### Selected Render route
 
-- Render Hobby/no-card account eligibility is verified; recheck before creating one Free web service for the owner-authorized serving bundle.
+- The Render Free HTTPS service is verified. Preserve its Free/no-card configuration and the serving-only publication boundary.
 - Keep feedback disabled for the first Render launch. An external durable store with 30-day expiry and replacement/duplicate verification is a separate incomplete lifecycle capability.
 - The local drift replay, promotion/rejection and rollback mechanisms are complete; do not use M4 test outcomes to retrain or change selection.
 - Keep source-terms uncertainty documented and exclude raw data and user records. The owner-authorized serving scope is recorded in `DATA_CARD.md`.
 
 ## Evidence integrity
 
-No cloud resource IDs, actual cloud costs, deployment URL or cloud verification are claimed. A live browser smoke was visually inspected against actual local model and evaluation outputs.
+The actual Render service, pinned registry image, HTTPS URL and bounded cloud smoke are recorded in `deploy/render/release.json` and ignored local evidence. Immediate dashboard charges are $0; no final bill or per-request cost is claimed. A live browser check inspected actual hosted model and saved evaluation outputs. The single frozen offline test remains unchanged.
 
 ### M7 — Cloud deployment (templates only; account gate blocks provisioning)
 
@@ -128,9 +128,9 @@ No cloud resource IDs, actual cloud costs, deployment URL or cloud verification 
 ## Current blockers and next actions
 
 1. The owner explicitly authorized limited serving publication on 2026-10-25 after reviewing uncertain source terms. Keep raw reviews, user records and training artifacts private; include publisher links and research citations.
-2. Render is selected and signed in; Azure academic verification is no longer a launch dependency. Recheck the no-card Hobby account and select exactly one Free web service before deployment.
-3. Publish the limited serving image, record its registry digest, create the Render service, and verify HTTPS, model identity, UI, bounded traffic, rollback and actual costs. Feedback remains disabled unless external durable storage is separately configured and tested.
-4. Code-only fresh-checkout checks passed locally, including a locked Linux environment and synthetic container startup/API smoke. Hosted GitHub Actions remains disabled until its billing allowance is verified. Complete the cloud release evidence audit after deployment. Never rerun the one-time final test or use it to promote/reselect a candidate.
+2. Render launch is complete; Azure academic verification is no longer a dependency. Preserve exactly one project Free service, no card, disabled feedback and natural idle suspension.
+3. Same-image replacement/rollback is verified after explicit owner approval. Durable feedback remains a separate incomplete capability and must stay disabled without a tested external store. Cloud capacity and actual memory telemetry are not established by the bounded smoke.
+4. Code-only fresh-checkout checks passed locally, including a locked Linux environment and synthetic container startup/API smoke. Hosted GitHub Actions remains disabled until its billing allowance is verified. Never rerun the one-time final test or use it to promote/reselect a candidate.
 - Template validation detail: PowerShell parser validation passed. The local Azure CLI could not bootstrap its Bicep compiler (it produced a locked zero-byte executable), so Bicep compilation and Azure `what-if` remain unverified. The host npm shim also points to a missing `npm-cli.js`; M6 frontend build/audit evidence remains valid, while the newly authored CI workflow has not run on GitHub.
 - Rechecked the publisher lab dataset page on 2026-10-25: it still requests citation but provides no explicit redistribution license on the accessible page; the primary CSE dataset page timed out. Updated [DATA_CARD.md](DATA_CARD.md); derived publication rights remain unresolved.
 
@@ -153,3 +153,15 @@ No cloud resource IDs, actual cloud costs, deployment URL or cloud verification 
 - Source validation evidence is ignored at `artifacts/deployment/render_source_validation.json`. These checks use synthetic fixtures and do not replace the separate actual-model 512 MB resource smoke. No final-test evaluation was rerun.
 - Added a shared 60-second deadline to the 45-request HTTP smoke and verified it against the existing localhost app; a separate ignored `render_local_deadline_smoke.json` records the successful check. No cloud request was made.
 - Remaining launch blocker is the plan's source-data public-use gate. Render account access is available; the real-data image/serving assets remain local, and no Game Discovery Render service or public URL exists.
+
+### Render launch and recovery verification — 2026-10-25
+
+- The owner challenged the earlier inference that missing explicit terms meant deployment was prohibited. No explicit public-deployment ban was established. After the source-terms uncertainty and metadata needed by the app were explained, the owner explicitly authorized publishing the limited inference application, item factors/features, historical catalog and aggregate statistics. This supersedes the earlier serving-publication hold, without establishing a dataset license or permission to redistribute raw/user-level data. Added publisher links, pinned mirror provenance and three research citations in `ATTRIBUTION.md` and the live `/static/attribution.html` page.
+- Source commit `c6d1d08` was pushed to the existing private GitHub repository. The frontend typecheck/build and three targeted release tests passed; Ruff and tracked-file privacy checks passed. The full 39-test clean-checkout result recorded above remains the latest full-suite run. The frozen final test was not rerun or used to change the selected model.
+- Built and published `docker.io/tg304429/game-discovery-ml:c6d1d08` using the already signed-in Docker Hub account. Registry digest: `sha256:b4d6ee9516a883804b6d750c71842915ea214c42dbc03821bca980a92907d560`; Linux amd64, 193,119,721 bytes. An in-image audit found exactly the seven allowlisted serving assets, no `/app/data` or `/app/private`, no user identifier/factor exports, and only the documented item catalog fields. The saved aggregate evaluation SHA-256 remains `52fcf50d60c4d7db272819ea6588fe517cb0d1754a4b0da8ad85605f2ae8d4a1`.
+- The final image passed a local 45-request smoke under 0.1 CPU, 512,000,000 bytes and no swap. Peak cgroup memory was 127,758,336 bytes, no OOM kill, with the smoke client outside the cgroup. Removed only the temporary release-check container; the earlier localhost app was retained.
+- Created exactly one project Render Free image-backed web service in Singapore, health path `/readyz`, port 10000 and one-thread numerical settings. Render verified anonymous access to the digest-pinned image. No database, disk, worker, card or paid plan was added. Initial deployment succeeded in 40.1 seconds at https://game-discovery-ml.onrender.com.
+- All 45 initial HTTPS checks passed in 12.95 seconds, maximum concurrency five, zero feedback writes. Across 36 mixed sequential/concurrent recommendation requests, median client latency was 461.61 ms, nearest-rank p95 1,081.13 ms and maximum 1,449.21 ms. These small functional measurements are not a capacity or stable tail-latency benchmark. Browser checks verified real comparison outputs, the saved evaluation view and source attribution. Screenshots and detailed smoke reports remain ignored under `artifacts/deployment`.
+- Automatic approval review initially rejected the extra live redeploy because of possible interruption. The owner then explicitly approved one same-image redeploy and rollback. Replacement succeeded in 30.3 seconds and passed 45 HTTPS checks in 11.47 seconds. Rollback to the first successful deployment succeeded in 30.8 seconds and passed 45 checks in 11.74 seconds. The final Render detail page reports `Deploy succeeded | Live` and identifies the original deployment as the rollback target. All stages used the same pinned image/model; no different-model cloud rollback is claimed.
+- Read-only post-launch billing showed Hobby, no card, $0 accrued/projected October charges, 53.75/750 shared free hours, 383 MB/5 GB bandwidth, 2/500 pipeline minutes and 17/25 services including unrelated apps. Render Free gates memory/CPU telemetry behind a paid plan; it was not purchased. Billing figures are immediate snapshots and may lag. Idle suspension is accepted; no keep-alive traffic or automation is configured. Review continued hosting on 2026-11-25.
+- Saved the sanitized release identity in `deploy/render/release.json` and updated README, deployment guide, costs and runbook with the live URL and exact service shutdown scope. The original model/split identity remains unchanged. Durable feedback, hosted CI allowance verification and a capacity benchmark remain separate incomplete capabilities.

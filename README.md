@@ -2,7 +2,7 @@
 
 Game Discovery is a research demo that helps visitors find historically related Steam games from a few titles they already know. It searches a historical catalog, ranks unseen games, explains recommendations, and compares popularity, collaborative filtering, and the selected hybrid on the same input.
 
-**Live demo:** none. The application has been run locally in Docker and checked in a browser; no cloud URL has been verified. Last local browser check: 2026-10-25.
+**Live demo:** [Game Discovery](https://game-discovery-ml.onrender.com). HTTPS API and browser checks passed on 2026-10-25. Render Free sleeps after inactivity; the first request may take about a minute to wake the app. Feedback collection is disabled.
 
 Source: [private code-only GitHub repository](https://github.com/tusharg007/game-discovery-ml). Raw data and user records remain private; the separately published serving image contains only item artifacts, the historical catalog and aggregate evaluation. See [data sources and citations](ATTRIBUTION.md).
 
@@ -36,7 +36,7 @@ The data pipeline streams bounded records, validates and deduplicates earliest u
 
 Local synthetic drift replay, a validation-only candidate rejection, and synthetic promotion/rollback checks are saved in ignored reports. These are demonstrations, not real-user monitoring. Feedback is visibly disabled in the app because there is no durable event store. The local rate limiter is process scoped and not a billing cap.
 
-Render Free is the selected hosting route. The actual app passed a local 45-request smoke at 0.1 CPU under a 512 MB memory cap; measured peak memory was about 171 MB, including the smoke client. The signed-in Render account is Hobby with no card on file. On 2026-10-25 the owner explicitly authorized the limited inference deployment after reviewing the source-terms uncertainty; this does not assign a license to the dataset. The allowlisted bundle excludes raw and user-level data. Deployment is in progress; there is no verified Render URL or cloud benchmark yet. Azure templates remain an unused alternative. See [DEPLOYMENT.md](DEPLOYMENT.md), [COSTS.md](COSTS.md), and [RUNBOOK.md](RUNBOOK.md) for status and shutdown procedure.
+The app runs on one Render Free web service in Singapore. All 45 bounded HTTPS smoke requests passed in 12.95 seconds, with at most five concurrent requests; the browser comparison, saved evaluation and attribution views were also verified. A subsequent replacement and rollback to the first successful deployment each passed the same 45 checks. The recovery exercise used the same pinned image and model throughout; it verifies deployment revision recovery, not rollback between different trained models. These checks establish functional deployment, not a capacity benchmark. The signed-in Render account is Hobby with no card on file. On 2026-10-25 the owner explicitly authorized the limited inference deployment after reviewing the source-terms uncertainty; this does not assign a license to the dataset. The allowlisted bundle excludes raw and user-level data. Local resource checks passed under a 512 MB cap; cloud memory telemetry requires a paid compute plan and was not purchased. Azure templates remain an unused alternative. See [DEPLOYMENT.md](DEPLOYMENT.md), [COSTS.md](COSTS.md), and [RUNBOOK.md](RUNBOOK.md) for status and shutdown procedure.
 
 ## Reproduce locally
 

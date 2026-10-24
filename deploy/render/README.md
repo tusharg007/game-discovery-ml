@@ -1,6 +1,8 @@
 # Render Free deployment
 
-Status: limited inference deployment authorized and in progress; no verified live Render service yet. The owner selected Render on 2026-10-25. The signed-in dashboard shows a Hobby workspace, no card on file, and $0 accrued charges. The owner explicitly authorized publishing the item model, historical catalog and aggregate statistics while retaining raw data and user records privately. `DATA_CARD.md` records this decision and source-terms uncertainty; no publisher permission or permissive license is claimed.
+Status: **cloud verified for inference and deployment revision recovery** at [https://game-discovery-ml.onrender.com](https://game-discovery-ml.onrender.com), checked 2026-10-25. The owner selected Render and explicitly authorized publishing the item model, historical catalog and aggregate statistics while retaining raw data and user records privately. The signed-in dashboard shows a Hobby workspace, no card on file, and $0 accrued charges. `DATA_CARD.md` records the source-terms uncertainty; no publisher permission or permissive license is claimed. An owner-approved same-image replacement and rollback to the first successful deploy each passed 45 HTTPS checks. This is not a rollback between different trained models.
+
+The published image is `docker.io/tg304429/game-discovery-ml@sha256:b4d6ee9516a883804b6d750c71842915ea214c42dbc03821bca980a92907d560`, built from source commit `c6d1d08`. Render verified anonymous registry access. The initial deploy completed in 40.1 seconds. All 45 HTTPS smoke requests passed in 12.95 seconds, including the three ranking modes and truthful feedback rejection. See [release.json](release.json).
 
 ## Resource plan
 
