@@ -8,6 +8,7 @@ tests/.pytest-tmp/
 build/
 dist/
 *.egg-info/
+web/node_modules/
 
 # Raw, processed and private user-level data
 /data/raw/**

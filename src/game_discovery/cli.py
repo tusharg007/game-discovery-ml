@@ -431,6 +431,23 @@ def _verify_release(bundle_dir: Path) -> int:
             raise RuntimeError(
                 "Serving rank order differs from the independent fixed-profile reference"
             )
+    comparison_path = bundle_dir.parent / "alternates/als"
+    als_parity: dict[str, object] | None = None
+    if comparison_path.exists():
+        from game_discovery.serving.als import ALSComparisonModel
+
+        als = ALSComparisonModel(comparison_path)
+        if (
+            als.manifest["user_factors_exported"]
+            or als.manifest["user_identifiers_exported"]
+            or als.manifest["training_histories_exported"]
+        ):
+            raise RuntimeError("ALS comparison artifact claims to contain private user data")
+        als_parity = als.verify_implicit_parity(als.item_ids[:3].tolist(), k=5)
+        if not als_parity["ids_match"] or not als_parity["scores_allclose"]:
+            raise RuntimeError(
+                "Custom ALS inference differs from implicit.recommend(recalculate_user=True)"
+            )
     result = {
         "status": "verified locally",
         "model_version": bundle.manifest["model_version"],
@@ -441,10 +458,19 @@ def _verify_release(bundle_dir: Path) -> int:
         "baseline_process_rss_mib": psutil.Process().memory_info().rss / (1024**2),
         "smoke_profiles": ["empty", "one seed", "two seeds"],
         "fixed_profile_rank_parity": True,
+        "als_comparison_parity": als_parity,
         "user_factors_exported": False,
         "user_identifiers_exported": False,
     }
     print(json.dumps(result, indent=2, sort_keys=True))
+    return 0
+
+
+def _export_als_comparison(training_report: Path, output_dir: Path) -> int:
+    from game_discovery.serving.als import export_als_comparison_model
+
+    report = export_als_comparison_model(training_report, output_dir)
+    print(json.dumps(report, indent=2, sort_keys=True))
     return 0
 
 
@@ -483,6 +509,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     export_command.add_argument("--output", type=Path)
     verify = commands.add_parser("verify-release", help="Verify a local model bundle and smoke it.")
     verify.add_argument("--bundle", type=Path, default=Path("models/release/selected_candidate"))
+    export_als = commands.add_parser(
+        "export-als-comparison",
+        help="Export item-only ALS factors as an optional comparison model.",
+    )
+    export_als.add_argument(
+        "--training-report", type=Path, default=Path("artifacts/reports/als_training.json")
+    )
+    export_als.add_argument("--output", type=Path, default=Path("models/release/alternates/als"))
     args = parser.parse_args(argv)
     if args.command == "doctor":
         return _doctor()
@@ -500,6 +534,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _export_release(args.config, args.output)
     if args.command == "verify-release":
         return _verify_release(args.bundle)
+    if args.command == "export-als-comparison":
+        return _export_als_comparison(args.training_report, args.output)
     return 2
 
 

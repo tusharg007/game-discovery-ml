@@ -4,9 +4,9 @@ Updated: 2026-10-25 (Asia/Calcutta)
 
 Source plan: `E:\Game Discovery\GAME_DISCOVERY_IMPLEMENTATION_PLAN.md` (kept outside this separate repository).
 
-## Current milestone: M5 — Product
+## Current milestone: M6 — Lifecycle
 
-M0–M4 have passed locally. M3 selection was frozen before the single M4 final-test run. The product remains local and no cloud deployment is claimed.
+M0–M5 have passed locally. M3 selection was frozen before the single M4 final-test run. The product remains local and no cloud deployment is claimed.
 
 ## M0 — Bootstrap
 
@@ -15,7 +15,7 @@ M0–M4 have passed locally. M3 selection was frozen before the single M4 final-
 - Python 3.11.9 and `uv` 0.13.5 used; `uv sync --extra train --extra dev` installed 46 packages.
 - CLI smoke: `uv run game-discovery doctor` reported ready on Python 3.11.9.
 - M0 checks: `uv run pytest` (1 passed), `uv run ruff check .` and `uv run ruff format --check .` (passed).
-- Docker Desktop 4.85.0 / Linux amd64 engine 29.6.2 is available. `npm` is broken and is not needed before the later frontend milestone.
+- Docker Desktop 4.85.0 / Linux amd64 engine 29.6.2 is available. The host npm shim was unavailable at M0; the later Vite build runs from a locked Node image in Docker.
 - E: had approximately 35.5 GB free initially; approximately 33.7 GiB remained after dataset acquisition and preparation.
 
 ## M1 — Real data
@@ -53,7 +53,7 @@ The UCSD page requests citation but does not state an explicit redistribution li
 - `uv run pytest --basetemp tests/.pytest-tmp -q` — 8 passed; Ruff check and format check passed.
 - Test outcomes have not been evaluated. The final-test command is gated until a selection record is frozen.
 
-## Next actions
+## Completed milestone history
 
 ### M3 — Learned ranking (completed locally)
 
@@ -66,7 +66,7 @@ The UCSD page requests citation but does not state an explicit redistribution li
 - Tests: `uv run pytest --basetemp tests/.pytest-tmp -q` — 13 passed. `uv run ruff check .` and `uv run ruff format --check .` passed.
 - End-to-end `uv run game-discovery evaluate --split validation --config configs/portfolio.yaml` completed across baselines, all ALS settings, item-item, static metadata and hybrid weight sweep. The hybrid sweep was then refreshed after aligning both rank percentiles over each user's unseen catalog. It evaluates validation only; the test gate remains closed.
 
-### M4 — Audit and export (next)
+### M4 — Audit and export (completed)
 
 Completed locally on 2026-10-25:
 
@@ -76,15 +76,27 @@ Completed locally on 2026-10-25:
 - The one-time command `uv run game-discovery evaluate --split test --config configs/portfolio.yaml` completed in 255.96 seconds at 387.7 MiB peak RSS. The selected candidate reached warm NDCG@10 0.05152 versus 0.02769 for recent-30-day popularity; paired difference +0.02383 (95% CI +0.02106 to +0.02674, 10,556 warm users). Test results did not change the frozen candidate.
 - Test reachability: 25,193 future-target users, 8,950 unreachable events, 4,827 users without reachable targets and 12,389 without history. Full aggregate metrics are in [EVALUATION.md](EVALUATION.md); per-user rows and detailed output remain ignored/private.
 - M4 does not claim serving latency; only offline recommendation generation, bundle size and post-load RSS have been measured.
-- After the final-test run, additional synthetic robustness cases for all-candidates-excluded, unknown-only seeds and corrupt catalog hashes passed; the current full suite is 18 passed. These tests did not access or change final-test metrics or model selection.
+- After the final-test run, additional synthetic robustness cases for all-candidates-excluded, unknown-only seeds and corrupt catalog hashes passed (18 tests at that stage). These tests did not access or change final-test metrics or model selection.
 
-### M5 — Product (next)
+### M5 — Product (completed locally)
 
-1. Build FastAPI catalog search and recommendation endpoints that load this verified bundle, handle unknown/empty/sparse profiles and expose explanations plus model/data limitations.
-2. Add a static browser interface with up-to-20 seed selection, exclusions, same-input model comparison and actual aggregate charts.
-3. Implement anonymous feedback with a visible retention notice, or leave it clearly disabled until durable storage is available.
-4. Add API/UI tests and a local Docker container. Keep user-specific events out of versioned serving artifacts.
+- Added FastAPI routes for health/readiness, bounded catalog search, validated recommendations, model/data information, aggregate evaluation, local-only operational metrics and explicit feedback-disabled behavior. Readiness loads the hash-verified item-only champion bundle; the optional ALS item-only sidecar is labeled as a validation-era reference.
+- Added a TypeScript/Vite front end with an accessible catalog picker (up to 20 seed games), optional genre filter, real popular/tail/sparse/cold-start/unknown examples, side-by-side same-input popularity/ALS/champion rankings, changed-rank indicators, raw score explanations, loading/error states and historical-data caveats. The evaluation view reads the saved aggregate JSON and displays the final-test result, paired interval, reachability cohort and coverage/exposure tradeoffs.
+- Feedback remains visibly disabled because durable storage is not configured. `/v1/events` returns HTTP 503 and `persisted: false`; no event data is stored.
+- Added a multi-stage local Docker image with pinned Node/Python base digests, locked frontend/Python dependencies, non-root runtime, readiness healthcheck, configurable `PORT`, one Uvicorn worker and single-thread numerical libraries. Raw data, private mappings, user histories and training dependencies are excluded from the image.
+- `docker build -t game-discovery:local .` passed. The local image is 193,069,748 bytes (`sha256:d98ef78c41cdb726b9c96e1ab7ff3527fd9d28288c7eb34164a98ef02c8cde`); the in-container content-feature SHA-256 matches the local refit bundle. Container smoke verified healthy readiness, non-root UID 10001, actual catalog search/tail slice, saved final-test aggregate, seeded recommendation scores/explanations and disabled-feedback status. Browser inspection captured real model comparisons and the saved evaluation charts from the running app.
+- Frontend: `npm ci`, `npm run typecheck`, `npm run build` and `npm audit --audit-level=high` passed in the Docker Node image; audit reported zero vulnerabilities. Python: 23 tests passed; Ruff check and format checks passed. Starlette emitted a deprecation warning for its TestClient/httpx integration.
+- No cloud account/resources, external feedback persistence, request-capacity benchmark, deployment URL or cloud verification is claimed. M6 is next: durable-store decision, monitoring replay, promotion/rejection and rollback evidence.
+
+## Next actions
+
+### M6 — Lifecycle
+
+- Select and verify a permitted private durable event store only after a protected-free-account preflight; otherwise retain the current read-only feedback-disabled mode.
+- Implement separate real-demo, replay and synthetic-test event streams, bounded retention, signed impression attribution and truthful duplicate/storage-failure behavior.
+- Add local drift replay evidence, candidate promotion/rejection and rollback tests without altering the frozen M3 selection or one-time M4 test result.
+- Keep the data redistribution review open; do not publish data-derived artifacts until it is resolved.
 
 ## Evidence integrity
 
-No UI screenshots, resource IDs, actual cloud costs, deployment URL or cloud verification are claimed.
+No cloud resource IDs, actual cloud costs, deployment URL or cloud verification are claimed. A live browser smoke was visually inspected against actual local model and evaluation outputs.

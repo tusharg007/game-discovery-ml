@@ -10,6 +10,7 @@ import pyarrow.parquet as pq
 import pytest
 
 from game_discovery.models.als import ALS_GRID, ALSConfig, build_confidence_matrix, train_als_grid
+from game_discovery.serving.als import ALSComparisonModel
 
 
 def test_confidence_matrix_uses_explicit_one_plus_alpha():
@@ -70,3 +71,30 @@ def test_implicit_cpu_als_training_smoke_records_factors_and_runtime(tmp_path: P
     with np.load(config["private_factors_path"], allow_pickle=False) as arrays:
         assert arrays["item_factors"].shape == (3, 2)
         assert arrays["user_factors"].shape == (3, 2)
+
+
+def test_als_serving_filters_genres_before_truncating_candidates(tmp_path: Path):
+    directory = tmp_path / "als-sidecar"
+    directory.mkdir()
+    factors_path = directory / "item_factors.npz"
+    index_path = directory / "item_ids.json"
+    np.savez_compressed(
+        factors_path,
+        item_factors=np.asarray([[1, 0], [0, 1], [1, 1]], dtype=np.float32),
+    )
+    index_path.write_text(json.dumps(["1", "2", "3"]), encoding="utf-8")
+    manifest = {
+        "item_factors_file": factors_path.name,
+        "item_factors_sha256": hashlib.sha256(factors_path.read_bytes()).hexdigest(),
+        "item_ids_file": index_path.name,
+        "item_ids_sha256": hashlib.sha256(index_path.read_bytes()).hexdigest(),
+        "regularization": 0.1,
+        "confidence": 2.0,
+        "source_configuration": "fixture-als",
+    }
+    (directory / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    model = ALSComparisonModel(directory)
+    result = model.recommend(["1"], allowed_item_ids={"3"}, k=1)
+    assert [row["item_id"] for row in result["recommendations"]] == ["3"]
+    no_match = model.recommend(["1"], allowed_item_ids=set(), k=1)
+    assert no_match["fallback_reason"] == "no_candidates_match_filter"

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111827" />
+    <title>Game Discovery</title>
+    <script type="module" crossorigin src="/static/assets/app.js"></script>
+    <link rel="stylesheet" crossorigin href="/static/assets/index.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Game Discovery home"><span class="brand-mark">GD</span><span>Game Discovery</span></a>
+      <nav aria-label="Main navigation"><button class="nav-button active" data-view="discover">Discover</button><button class="nav-button" data-view="evaluation">Evaluation</button></nav>
+      <span class="local-badge"><span class="status-dot"></span>Local research demo</span>
+    </header>
+    <main>
+      <section id="discover-view" class="view">
+        <div class="hero"><div class="eyebrow">FIND YOUR NEXT WORLD</div><h1>What games pull you in?</h1><p>Pick a few games you enjoy exploring. We’ll find historical titles with related catalog features and review activity.</p></div>
+        <aside class="notice" role="note"><span class="notice-icon">i</span><p>This demo uses historical Steam review interactions. A review means someone played and wrote about a game; it does not prove they liked it. Catalog information is historical, not a current store listing.</p></aside>
+        <div class="workspace-grid">
+          <section class="panel picker-panel" aria-labelledby="picker-title">
+            <div class="panel-heading"><div><div class="eyebrow">YOUR STARTING POINT</div><h2 id="picker-title">Choose up to 20 games</h2></div><span id="seed-count" class="count-pill">0 / 20</span></div>
+            <label for="game-search" class="field-label">Search the historical catalog</label>
+            <div class="search-row"><input id="game-search" type="search" autocomplete="off" placeholder="Try a title, genre, or tag" aria-describedby="search-help" /><button id="search-button" class="button button-secondary">Search</button></div>
+            <div id="search-help" class="field-hint">Searches titles and historical catalog tags.</div>
+            <div id="search-results" class="search-results" role="listbox" aria-label="Catalog search results"></div>
+            <div class="selected-heading"><span class="field-label">Selected games</span><button id="clear-seeds" class="text-button" type="button">Clear all</button></div>
+            <div id="selected-seeds" class="seed-list" aria-live="polite"><span class="empty-state">Your picks will appear here.</span></div>
+            <div class="filter-row"><label class="field-label" for="genre-filter">Optional genre filter</label><input id="genre-filter" type="text" list="genre-options" placeholder="e.g. Strategy" /><datalist id="genre-options"></datalist><div class="field-hint">Filters candidates using historical genre tags.</div></div>
+            <div class="actions-row"><button id="get-recommendations" class="button button-primary">Show recommendations <span aria-hidden="true">→</span></button><label class="select-label" for="result-count">Show <select id="result-count"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></label></div>
+            <div id="request-status" class="request-status" role="status" aria-live="polite"></div>
+          </section>
+          <aside class="panel examples-panel" aria-labelledby="examples-title">
+            <div class="eyebrow">TRY A PROFILE</div><h2 id="examples-title">Start with an example</h2><p class="muted">These buttons use real catalog entries from the loaded model.</p>
+            <button class="example-card" data-example="popular"><span class="example-icon warm">✦</span><span><strong>Popular seeds</strong><small>Start from widely reviewed games</small></span><span class="example-arrow">↗</span></button>
+            <button class="example-card" data-example="niche"><span class="example-icon lilac">◈</span><span><strong>Less obvious pick</strong><small>Start from a smaller catalog result</small></span><span class="example-arrow">↗</span></button>
+            <button class="example-card" data-example="sparse"><span class="example-icon mint">◉</span><span><strong>Sparse profile</strong><small>See what one seed can do</small></span><span class="example-arrow">↗</span></button>
+            <button class="example-card" data-example="cold"><span class="example-icon blue">＋</span><span><strong>Cold start</strong><small>Try the popularity fallback</small></span><span class="example-arrow">↗</span></button>
+            <button class="example-card" data-example="failure"><span class="example-icon rose">!</span><span><strong>Unknown game ID</strong><small>See explicit fallback behavior</small></span><span class="example-arrow">↗</span></button>
+            <div class="feedback-note"><strong>Feedback is off.</strong> This demo does not save clicks or preferences.</div>
+          </aside>
+        </div>
+        <section id="recommendation-section" class="results-section" hidden><div class="results-heading"><div><div class="eyebrow">SAME INPUT · DIFFERENT SIGNALS</div><h2>Your comparison</h2></div><span id="result-model-version" class="version-pill"></span></div><div id="comparison-grid" class="comparison-grid"></div></section>
+      </section>
+      <section id="evaluation-view" class="view" hidden>
+        <div class="hero compact-hero"><div class="eyebrow">MEASURED RESULTS</div><h1>What the model learned</h1><p>One frozen test window compares the selected model with recent popularity using the same historical catalog and user cohort.</p></div>
+        <aside class="notice" role="note"><span class="notice-icon">i</span><p>These are historical review-interaction metrics, not predictions of purchases, enjoyment, or future engagement. The content features come from a metadata snapshot with no verified historical availability date.</p></aside>
+        <section class="panel evaluation-panel"><div id="evaluation-content"><p class="muted">Loading saved aggregate evaluation…</p></div></section>
+      </section>
+    </main>
+    <footer><span>Independent research demo · Not affiliated with Valve or Steam</span><span id="footer-version"></span></footer>
+  </body>
+</html>

@@ -7,10 +7,8 @@ import time
 from pathlib import Path
 from typing import Any
 
-import duckdb
 import numpy as np
 import scipy.sparse as sp
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 def _sha256(path: Path) -> str:
@@ -33,6 +31,9 @@ def export_selected_bundle(
     output_dir: Path,
 ) -> dict[str, Any]:
     """Refit the frozen static-content/popularity candidate before cutoff B and export items only."""
+    import duckdb
+    from sklearn.feature_extraction.text import TfidfVectorizer
+
     selection = json.loads(selection_path.read_text(encoding="utf-8"))
     split_manifest = json.loads(split_manifest_path.read_text(encoding="utf-8"))
     if selection["split_manifest_sha256"] != split_manifest["split_manifest_sha256"]:
@@ -180,15 +181,24 @@ class RecommendationBundle:
         seed_item_ids: list[str],
         *,
         exclude_item_ids: list[str] | None = None,
+        genres: list[str] | None = None,
         k: int = 10,
+        model: str = "champion",
     ) -> dict[str, Any]:
         if isinstance(k, bool) or not isinstance(k, int) or not 1 <= k <= 20:
             raise ValueError("k must be an integer from 1 to 20")
+        if model not in ("champion", "recent_popularity"):
+            raise ValueError("model must be champion or recent_popularity")
         if len(seed_item_ids) > 20:
             raise ValueError("at most 20 seed games are allowed")
         seeds = list(dict.fromkeys(str(item) for item in seed_item_ids))
         return self._recommend_ids(
-            seeds, exclude_item_ids or [], k, duplicate_seed_count=len(seed_item_ids) - len(seeds)
+            seeds,
+            exclude_item_ids or [],
+            k,
+            genres or [],
+            model,
+            duplicate_seed_count=len(seed_item_ids) - len(seeds),
         )
 
     def recommend_from_history(self, history_item_ids: list[str], *, k: int = 10) -> dict[str, Any]:
@@ -196,13 +206,15 @@ class RecommendationBundle:
         if isinstance(k, bool) or not isinstance(k, int) or not 1 <= k <= 20:
             raise ValueError("k must be an integer from 1 to 20")
         history = list(dict.fromkeys(str(item) for item in history_item_ids))
-        return self._recommend_ids(history, [], k)
+        return self._recommend_ids(history, [], k, [], "champion")
 
     def _recommend_ids(
         self,
         seeds: list[str],
         exclude_item_ids: list[str],
         k: int,
+        genres: list[str],
+        requested_model: str,
         *,
         duplicate_seed_count: int = 0,
     ) -> dict[str, Any]:
@@ -213,6 +225,18 @@ class RecommendationBundle:
             [index for index, item_id in enumerate(self.item_ids) if item_id not in seen_ids],
             dtype=np.int32,
         )
+        if genres:
+            wanted_genres = {genre.casefold() for genre in genres}
+            candidates = np.asarray(
+                [
+                    index
+                    for index in candidates
+                    if wanted_genres.intersection(
+                        genre.casefold() for genre in self.catalog[index]["genres"]
+                    )
+                ],
+                dtype=np.int32,
+            )
         if not len(candidates):
             return {
                 "model_version": self.manifest["model_version"],
@@ -220,10 +244,32 @@ class RecommendationBundle:
                 if known_seed_indices
                 else "recent30_popularity_fallback",
                 "recommendations": [],
-                "fallback_reason": "all_candidates_excluded",
+                "fallback_reason": "no_candidates_match_genres"
+                if genres
+                else "all_candidates_excluded",
                 "unknown_seed_count": sum(item not in self.item_index for item in seeds),
             }
-        if known_seed_indices:
+        if requested_model == "recent_popularity":
+            order = candidates[
+                np.lexsort(
+                    (
+                        self.item_ids[candidates],
+                        -np.asarray(
+                            [self.catalog[index]["recent_30d_interactions"] for index in candidates]
+                        ),
+                    )
+                )
+            ]
+            model = "recent30_popularity"
+            fallback_reason = None
+            model_scores = np.asarray(
+                [
+                    self.catalog[index]["recent_30d_interactions"]
+                    for index in range(len(self.catalog))
+                ],
+                dtype=np.float32,
+            )
+        elif known_seed_indices:
             profile = self.features[known_seed_indices].sum(axis=0).T
             content_scores = np.asarray(self.features @ profile).ravel()
             content_order = candidates[
@@ -244,6 +290,7 @@ class RecommendationBundle:
             combined = (1.0 - content_weight) * popularity_rank + content_weight * content_rank
             order = candidates[np.lexsort((self.item_ids[candidates], -combined[candidates]))]
             model = "recent30_content_rank_fusion"
+            model_scores = combined
             fallback_reason = (
                 "unknown_seeds_used_known_content" if len(known_seed_indices) < len(seeds) else None
             )
@@ -260,6 +307,13 @@ class RecommendationBundle:
             ]
             model = "recent30_popularity_fallback"
             fallback_reason = "no_known_seed_games"
+            model_scores = np.asarray(
+                [
+                    self.catalog[index]["recent_30d_interactions"]
+                    for index in range(len(self.catalog))
+                ],
+                dtype=np.float32,
+            )
         selected = order[:k]
         recommendations: list[dict[str, Any]] = []
         seed_meta = [self.catalog[index] for index in known_seed_indices]
@@ -287,7 +341,13 @@ class RecommendationBundle:
                     "genres": item["genres"],
                     "tags": item["tags"],
                     "release_date": item["release_date"],
+                    "ranking_score": float(model_scores[int(index)]),
                     "explanation": explanation,
+                    "explanation_evidence": {
+                        "shared_genres": shared_genres,
+                        "shared_tags": shared_tags,
+                        "algorithm": model,
+                    },
                 }
             )
         return {
