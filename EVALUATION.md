@@ -1,6 +1,6 @@
 # Evaluation — future review-interaction ranking
 
-Status: M2 chronological evaluation and popularity baselines completed locally on 2026-10-24. The final test partition has not been evaluated.
+Status: M3 validation comparisons completed locally on 2026-10-25. The final test partition has not been evaluated.
 
 ## Data and split
 
@@ -35,12 +35,33 @@ The 30-day recent-popularity baseline currently leads warm NDCG@10 and all-targe
 
 These are initial results from one portfolio sample and one validation window. They do not establish performance on full Steam data, a current storefront, or another future period. Historical metadata has no guaranteed as-of timestamp; metadata models will be reported as a separate static-metadata track.
 
+## Learned and hybrid model results
+
+The same frozen split, eligible catalog and warm cohort were used. ALS and item-item were compared with global popularity; the hybrid rank-fusion candidate was compared with the stronger recent-30-day baseline. Intervals use 2,000 paired user-bootstrap resamples with seed 1729.
+
+| Model | Warm NDCG@10 | Catalog coverage@10 | Tail exposure@10 | Paired NDCG@10 difference (95% CI) |
+|---|---:|---:|---:|---:|
+| ALS, best validation config (32 factors, reg 0.01, alpha 10) | 0.02855 | 0.06152 | 0.000 | -0.01166 vs global [-0.01488, -0.00844] |
+| Item-item cosine, shrinkage 20, 200 neighbors | 0.03555 | 0.59125 | 0.0565 | -0.00466 vs global [-0.00739, -0.00192] |
+| Static metadata TF-IDF alone | 0.01885 | 0.69983 | 0.1640 | -0.02136 vs global [-0.02475, -0.01790] |
+| Recent-30-day popularity | 0.05146 | 0.00413 | 0.000 | reference |
+| **Selected validation candidate: 90% recent-30-day rank + 10% content rank** | **0.05317** | **0.02230** | **0.0044** | **+0.00172 vs recent-30-day [95% CI -0.00172 to +0.00515]** |
+
+Rank fusion uses per-user unseen-catalog rank percentiles rather than blending raw scores. The 10% content weight was the highest-NDCG setting in the evaluated `{10%, 15%, 20%, 25%}` content sweep. It improves the validation point estimate by 3.3% and increases coverage and tail exposure. The interval includes zero, so the data do not establish that it beats recent popularity. It is frozen as the product candidate because it has the best observed NDCG point estimate while meeting the plan's 2% NDCG-loss guardrail and improving exposure; this is a validation choice, not a proven gain.
+
+The unmitigated content reference has much higher tail exposure and catalog coverage but substantially lower NDCG. The recent-popularity blend controls that tradeoff. The underlying metadata has no as-of timestamp, so the selected candidate belongs to the separately labeled static-metadata experiment; it cannot establish historically available content features. ALS, item-item and content-only did not beat global popularity on this split. No test results informed the selection.
+
+ALS training ran all eight planned configurations on CPU. In the integrated CLI run, runtimes were 6.68–15.7 seconds per configuration and peak process RSS was 235–243 MiB. Item-item cosine training took 2.86 seconds; the sparse 7,266-item matrix has 816,379 deterministically selected neighbor links. TF-IDF construction took 0.64 seconds with 8,615 features and 206,761 nonzeros. These are local training measurements; item-item and TF-IDF peak RSS was not captured. The integrated exact-catalog validation CLI completed successfully; scoring all eight ALS configurations was the longest step.
+
+The committed [MODEL_SELECTION.md](MODEL_SELECTION.md) freezes the validation choice and constraints. Detailed reports and private per-user contributions are ignored local files under `artifacts/reports` and `private/evaluation`.
+
 ## Reproduction
 
 ```powershell
 uv sync --extra train --extra dev
 uv run game-discovery data split --config configs/portfolio.yaml
 uv run game-discovery evaluate --split validation --config configs/portfolio.yaml
+uv run game-discovery train --config configs/portfolio.yaml
 ```
 
 The baseline report and per-user bootstrap contributions are under ignored `artifacts/reports/validation_baselines.json` and `private/evaluation/validation_baselines.parquet`. Per-user values contain private pseudonymous user keys and must remain local. Aggregate outputs remain local until data-derived publication permission is resolved.

@@ -9,17 +9,7 @@ from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
 
-import duckdb
-import pyarrow as pa
-import pyarrow.parquet as pq
-import yaml
-
 from game_discovery import __version__
-from game_discovery.data.download import FILES, download_one, verify_download
-from game_discovery.data.parse import prepare_interactions, prepare_items
-from game_discovery.data.quality import prepare_quality
-from game_discovery.data.split import freeze_global_split
-from game_discovery.evaluation.baselines import evaluate_validation_baselines
 
 
 def _doctor() -> int:
@@ -37,6 +27,8 @@ def _doctor() -> int:
 
 
 def _load_config(path: Path) -> tuple[dict, Path]:
+    import yaml
+
     resolved = path.resolve()
     config = yaml.safe_load(resolved.read_text(encoding="utf-8"))
     if not isinstance(config, dict):
@@ -57,6 +49,10 @@ def _existing_interaction_parse(
     quarantine_path: Path,
     source_file_hash: str,
 ) -> dict[str, int] | None:
+    import duckdb
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
     if (
         not interaction_rows_path.is_file()
         or interaction_rows_path.with_name(f"{interaction_rows_path.name}.part").exists()
@@ -93,6 +89,8 @@ def _existing_interaction_parse(
 
 
 def _data_download(config_path: Path, requested_source: str | None) -> int:
+    from game_discovery.data.download import FILES, download_one, verify_download
+
     config, root = _load_config(config_path)
     raw_dir = root / config.get("paths", {}).get("raw", "data/raw")
     manifest_path = root / "artifacts/manifests/source_manifest.json"
@@ -125,6 +123,10 @@ def _data_download(config_path: Path, requested_source: str | None) -> int:
 
 
 def _data_prepare(config_path: Path) -> int:
+    from game_discovery.data.download import FILES, verify_download
+    from game_discovery.data.parse import prepare_interactions, prepare_items
+    from game_discovery.data.quality import prepare_quality
+
     config, root = _load_config(config_path)
     raw_dir = root / config.get("paths", {}).get("raw", "data/raw")
     processed = root / config.get("paths", {}).get("processed", "data/processed")
@@ -212,6 +214,8 @@ def _data_prepare(config_path: Path) -> int:
 
 
 def _data_split(config_path: Path) -> int:
+    from game_discovery.data.split import freeze_global_split
+
     config, root = _load_config(config_path)
     mode = str(config.get("mode", "smoke"))
     processed = root / config.get("paths", {}).get("processed", "data/processed")
@@ -225,6 +229,8 @@ def _data_split(config_path: Path) -> int:
 
 
 def _evaluate(split: str, config_path: Path) -> int:
+    from game_discovery.evaluation.baselines import evaluate_validation_baselines
+
     if split != "validation":
         raise RuntimeError(
             "Final test evaluation is gated until a frozen validation selection record exists"
@@ -237,7 +243,102 @@ def _evaluate(split: str, config_path: Path) -> int:
         root / "artifacts/reports/validation_baselines.json",
         root / "private/evaluation/validation_baselines.parquet",
     )
-    print(json.dumps(report, indent=2, sort_keys=True, default=str))
+    als_training_report = root / "artifacts/reports/als_training.json"
+    combined: dict[str, object] = {"baselines": report}
+    if als_training_report.exists():
+        from game_discovery.evaluation.als import evaluate_als_grid
+
+        combined["als"] = evaluate_als_grid(
+            root / "data/processed/splits" / mode,
+            root / "artifacts/manifests/split_manifest.json",
+            als_training_report,
+            root / "artifacts/reports/validation_baselines.json",
+            root / "private/evaluation/validation_baselines.parquet",
+            root / "artifacts/reports/validation_als.json",
+            root / "private/evaluation/validation_als.parquet",
+        )
+    item_item_training = root / "artifacts/reports/item_item_training.json"
+    if item_item_training.exists():
+        from game_discovery.evaluation.item_item import evaluate_item_item
+
+        combined["item_item"] = evaluate_item_item(
+            root / "data/processed/splits" / mode,
+            root / "artifacts/manifests/split_manifest.json",
+            item_item_training,
+            root / "artifacts/reports/validation_baselines.json",
+            root / "private/evaluation/validation_baselines.parquet",
+            root / "artifacts/reports/validation_item_item.json",
+            root / "private/evaluation/validation_item_item.parquet",
+        )
+    content_training = root / "artifacts/reports/static_metadata_training.json"
+    if content_training.exists():
+        from game_discovery.evaluation.item_item import evaluate_item_item
+
+        combined["static_metadata"] = evaluate_item_item(
+            root / "data/processed/splits" / mode,
+            root / "artifacts/manifests/split_manifest.json",
+            content_training,
+            root / "artifacts/reports/validation_baselines.json",
+            root / "private/evaluation/validation_baselines.parquet",
+            root / "artifacts/reports/validation_static_metadata.json",
+            root / "private/evaluation/validation_static_metadata.parquet",
+        )
+    if als_training_report.exists() and item_item_training.exists() and content_training.exists():
+        from game_discovery.evaluation.hybrid import evaluate_validation_hybrids
+
+        combined["hybrids"] = evaluate_validation_hybrids(
+            root / "data/processed/splits" / mode,
+            root / "artifacts/manifests/split_manifest.json",
+            als_training_report,
+            item_item_training,
+            content_training,
+            root / "artifacts/reports/validation_baselines.json",
+            root / "private/evaluation/validation_baselines.parquet",
+            root / "artifacts/reports/validation_hybrids.json",
+            root / "private/evaluation/validation_hybrids.parquet",
+        )
+    print(json.dumps(combined, indent=2, sort_keys=True, default=str))
+    return 0
+
+
+def _train(config_path: Path) -> int:
+    from game_discovery.models.als import train_als_grid
+    from game_discovery.models.content import train_static_metadata_tfidf
+    from game_discovery.models.item_item import train_item_item
+
+    config, root = _load_config(config_path)
+    mode = str(config.get("mode", "smoke"))
+    report = train_als_grid(
+        root / "data/processed/splits" / mode / "train.parquet",
+        root / "artifacts/manifests/split_manifest.json",
+        root / "private/experiments/als",
+        root / "artifacts/reports/als_training.json",
+    )
+    item_item_report = train_item_item(
+        root / "data/processed/splits" / mode / "train.parquet",
+        root / "artifacts/manifests/split_manifest.json",
+        root / "private/experiments/item_item/similarity.npz",
+        root / "artifacts/reports/item_item_training.json",
+    )
+    content_report = train_static_metadata_tfidf(
+        root / "data/processed/splits" / mode / "train.parquet",
+        root / "data/processed/cleaned/items.parquet",
+        root / "artifacts/manifests/split_manifest.json",
+        root / "private/experiments/static_metadata/features.npz",
+        root / "artifacts/reports/static_metadata_training.json",
+    )
+    print(
+        json.dumps(
+            {
+                "als": report,
+                "item_item": item_item_report,
+                "static_metadata": content_report,
+            },
+            indent=2,
+            sort_keys=True,
+            default=str,
+        )
+    )
     return 0
 
 
@@ -267,6 +368,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     evaluate = commands.add_parser("evaluate", help="Evaluate models on a frozen temporal split.")
     evaluate.add_argument("--split", choices=("validation", "test"), required=True)
     evaluate.add_argument("--config", type=Path, default=Path("configs/portfolio.yaml"))
+    train = commands.add_parser("train", help="Train configured CPU recommendation models.")
+    train.add_argument("--config", type=Path, default=Path("configs/portfolio.yaml"))
     args = parser.parse_args(argv)
     if args.command == "doctor":
         return _doctor()
@@ -278,6 +381,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _data_split(args.config)
     if args.command == "evaluate":
         return _evaluate(args.split, args.config)
+    if args.command == "train":
+        return _train(args.config)
     return 2
 
 

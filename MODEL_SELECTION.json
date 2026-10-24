@@ -1,0 +1,44 @@
+{
+  "frozen_at": "2026-10-25",
+  "timezone": "Asia/Calcutta",
+  "experiment": "future review-interaction ranking",
+  "split_manifest_sha256": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+  "validation_window": {
+    "start_inclusive": "2017-01-28",
+    "end_inclusive": "2017-08-21"
+  },
+  "eligible_catalog_count": 7266,
+  "warm_user_count": 8833,
+  "selected_candidate": "hybrid_recent30_content_w10",
+  "selection_metric": "warm_catalog_ndcg@10",
+  "rank_normalization_scope": "per-user unseen eligible catalog",
+  "parameters": {
+    "recent_popularity_days": 30,
+    "recent_rank_weight": 0.9,
+    "content_rank_weight": 0.1,
+    "content_features": ["title", "genres", "tags"],
+    "tfidf_ngram_range": [1, 2],
+    "tfidf_min_df": 2,
+    "tfidf_max_features": 50000,
+    "realized_feature_count": 8615
+  },
+  "validation_metrics": {
+    "selected_ndcg_at_10": 0.05317498521993007,
+    "recent_30d_baseline_ndcg_at_10": 0.05145909127987408,
+    "paired_difference": 0.0017158939400559064,
+    "paired_difference_ci95_low": -0.001718947090027663,
+    "paired_difference_ci95_high": 0.005152853525626131,
+    "bootstrap_resamples": 2000,
+    "bootstrap_seed": 1729,
+    "catalog_coverage_at_10": 0.022295623451692816,
+    "tail_exposure_share_at_10": 0.00443764666443178
+  },
+  "guardrail": {
+    "maximum_relative_ndcg_loss": 0.02,
+    "observed_relative_change": 0.033344,
+    "point_estimate_passed": true,
+    "statistically_established_gain": false
+  },
+  "test_partition_opened": false,
+  "metadata_track": "static metadata; historical availability is not established"
+}

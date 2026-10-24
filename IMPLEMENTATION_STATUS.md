@@ -1,12 +1,12 @@
 # Implementation Status
 
-Updated: 2026-10-24 (Asia/Calcutta)
+Updated: 2026-10-25 (Asia/Calcutta)
 
 Source plan: `E:\Game Discovery\GAME_DISCOVERY_IMPLEMENTATION_PLAN.md` (kept outside this separate repository).
 
-## Current milestone: M3 — Learned ranking
+## Current milestone: M4 — Audit and export
 
-M0, M1 and the M2 split/baseline gates have passed locally. The final test partition remains unopened.
+M0, M1, M2, and the M3 validation-selection gate have passed locally. The final test partition remains unopened.
 
 ## M0 — Bootstrap
 
@@ -55,10 +55,24 @@ The UCSD page requests citation but does not state an explicit redistribution li
 
 ## Next actions
 
-1. Train item-item cosine and CPU implicit ALS models using training events only; verify ALS confidence convention and CPU smoke training.
-2. Evaluate against validation with the frozen warm/all-target catalog contracts and compare to the strongest popularity baseline.
-3. Add the separately labeled static-metadata TF-IDF reference and validation ablations before freezing selection.
+### M3 — Learned ranking (completed locally)
+
+- CPU implicit ALS grid: `uv run game-discovery train --config configs/portfolio.yaml`; eight configurations, 32/64 factors × 0.01/0.1 regularization × alpha 10/40, 20 iterations, seed 1729, one CPU/BLAS thread. Stored confidence is `1 + alpha`; the library multiplier is explicitly 1.0. Training artifacts and hashes are local/ignored.
+- Integrated ALS training runtimes: 6.68–15.7 seconds per configuration; measured process peak RSS: 235–243 MiB. Best validation configuration was 32 factors, regularization 0.01, alpha 10. Warm NDCG@10 0.02855; paired difference vs global popularity -0.01166 (95% CI -0.01488 to -0.00844).
+- Item-item cosine: sparse binary co-occurrence, cosine normalization, count shrinkage 20 and up to 200 deterministically selected neighbors per item. Integrated training took 2.86 seconds; matrix has 816,379 links. Validation warm NDCG@10 0.03555, paired difference vs global popularity -0.00466 (95% CI -0.00739 to -0.00192).
+- Static metadata TF-IDF: title, genres and tags, fitted for the eligible catalog; 8,615 sparse features and 206,761 nonzeros; integrated construction took 0.64 seconds. Validation warm NDCG@10 0.01885. This is separately labeled because the metadata snapshot has no as-of timestamp.
+- Rank-fusion blends use training-only recency/popularity and per-user unseen-catalog score ranks. A 10% content-rank + 90% recent-30-day-rank candidate scored NDCG@10 0.05317 vs 0.05146 for recent-30-day popularity; paired difference +0.00172 (95% CI -0.00172 to +0.00515). Catalog coverage rose 0.41% to 2.23%; tail exposure rose 0% to 0.44%. The interval includes zero, so this is not a statistically established improvement.
+- Frozen validation choice and parameters are in [MODEL_SELECTION.md](MODEL_SELECTION.md) and [MODEL_SELECTION.json](MODEL_SELECTION.json). The final test partition remains unopened. Full metrics and model tradeoffs are in [EVALUATION.md](EVALUATION.md).
+- Tests: `uv run pytest --basetemp tests/.pytest-tmp -q` — 13 passed. `uv run ruff check .` and `uv run ruff format --check .` passed.
+- End-to-end `uv run game-discovery evaluate --split validation --config configs/portfolio.yaml` completed across baselines, all ALS settings, item-item, static metadata and hybrid weight sweep. The hybrid sweep was then refreshed after aligning both rank percentiles over each user's unseen catalog. It evaluates validation only; the test gate remains closed.
+
+### M4 — Audit and export (next)
+
+1. Refit the frozen candidate on train + validation without changing its selection record; export an item-only, user-factor-free serving bundle.
+2. Implement exact seed-profile inference and verify score/ranking parity with fixed examples.
+3. Open the test partition once after recording all selection settings; report paired uncertainty, cohorts, exposure and robustness cases.
+4. Measure release bundle size, baseline resident memory and serving latency.
 
 ## Evidence integrity
 
-No learned-model scores, UI screenshots, resource IDs, actual cloud costs, deployment URL or cloud verification are claimed.
+No final-test results, UI screenshots, resource IDs, actual cloud costs, deployment URL or cloud verification are claimed.
