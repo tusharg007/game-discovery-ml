@@ -29,6 +29,8 @@ web/node_modules/
 # Local Azure parameters may contain project-specific deployment values
 /deploy/azure/parameters.local.json
 /.az-cli-validation/
+/.ci-smoke-run/
+/.ci-smoke-run.tar
 
 # Model outputs are ignored until an explicitly approved compact release artifact is reviewed
 /models/**
