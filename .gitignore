@@ -3,6 +3,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+tests/.pytest-tmp/
 .ruff_cache/
 build/
 dist/

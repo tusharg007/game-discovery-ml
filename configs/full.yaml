@@ -1,5 +1,7 @@
 mode: full
 seed: 1729
+source:
+  download: auto
 sampling:
   strategy: all_eligible_users
   fraction: 1.0

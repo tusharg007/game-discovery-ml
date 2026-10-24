@@ -6,7 +6,7 @@ The prediction target is a **future review interaction**. A review is evidence o
 
 ## Project status
 
-Bootstrap work is in progress. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for measured setup results, blockers and exact commands. No dataset has been downloaded, no model has been trained, and no performance or deployment results are claimed yet.
+M0 bootstrap and M1 real-data preparation are complete locally. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for the executed commands, measured data counts and remaining gates. Model training, evaluation, application and deployment have not been completed; no recommendation performance or deployment results are claimed.
 
 ## Planned local setup
 

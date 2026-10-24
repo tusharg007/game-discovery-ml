@@ -1,5 +1,7 @@
 mode: portfolio
 seed: 1729
+source:
+  download: auto
 sampling:
   strategy: stable_user_hash
   fraction: null
