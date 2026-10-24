@@ -229,12 +229,27 @@ def _data_split(config_path: Path) -> int:
 
 
 def _evaluate(split: str, config_path: Path) -> int:
-    from game_discovery.evaluation.baselines import evaluate_validation_baselines
+    if split == "test":
+        config, root = _load_config(config_path)
+        mode = str(config.get("mode", "smoke"))
+        from game_discovery.evaluation.final_test import evaluate_frozen_candidate_on_test
 
+        report = evaluate_frozen_candidate_on_test(
+            root / "data/processed/splits" / mode,
+            root / "artifacts/manifests/split_manifest.json",
+            root / "MODEL_SELECTION.json",
+            root / "models/release/selected_candidate",
+            root / "artifacts/reports/final_test.json",
+            root / "private/evaluation/final_test.parquet",
+        )
+        print(json.dumps(report, indent=2, sort_keys=True, default=str))
+        return 0
     if split != "validation":
         raise RuntimeError(
-            "Final test evaluation is gated until a frozen validation selection record exists"
+            "Split must be validation or test; test uses the frozen selection and release bundle"
         )
+    from game_discovery.evaluation.baselines import evaluate_validation_baselines
+
     config, root = _load_config(config_path)
     mode = str(config.get("mode", "smoke"))
     report = evaluate_validation_baselines(
@@ -342,6 +357,97 @@ def _train(config_path: Path) -> int:
     return 0
 
 
+def _export_release(config_path: Path, output_dir: Path | None = None) -> int:
+    from game_discovery.serving.bundle import export_selected_bundle
+
+    config, root = _load_config(config_path)
+    mode = str(config.get("mode", "smoke"))
+    directory = output_dir or root / "models/release/selected_candidate"
+    report = export_selected_bundle(
+        root / "data/processed/splits" / mode,
+        root / "data/processed/cleaned/items.parquet",
+        root / "MODEL_SELECTION.json",
+        root / "artifacts/manifests/split_manifest.json",
+        directory,
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
+def _verify_release(bundle_dir: Path) -> int:
+    import numpy as np
+    import psutil
+
+    from game_discovery.serving.bundle import RecommendationBundle
+
+    bundle = RecommendationBundle(bundle_dir)
+    examples = [
+        bundle.recommend([], k=5),
+        bundle.recommend([str(bundle.item_ids[0])], k=5),
+        bundle.recommend([str(bundle.item_ids[0]), str(bundle.item_ids[1])], k=5),
+    ]
+    if any(len(result["recommendations"]) > 5 for result in examples):
+        raise RuntimeError("Release smoke returned more recommendations than requested")
+    size = bundle.manifest["bundle_file_bytes"]
+    if size >= 100 * 1024 * 1024:
+        raise RuntimeError(f"Release bundle exceeds the 100 MiB target: {size} bytes")
+    if bundle.manifest["user_factors_exported"] or bundle.manifest["user_identifiers_exported"]:
+        raise RuntimeError("Release manifest claims that private user data is present")
+    parity_profiles = [bundle.item_ids[:1].tolist(), bundle.item_ids[:3].tolist()]
+    for seed_ids in parity_profiles:
+        seed_indices = [bundle.item_index[item] for item in seed_ids]
+        reference_scores = np.zeros(len(bundle.item_ids), dtype=np.float32)
+        for seed_index in seed_indices:
+            reference_scores += np.asarray(
+                (bundle.features @ bundle.features.getrow(seed_index).T).toarray()
+            ).ravel()
+        candidates = np.asarray(
+            [index for index, item_id in enumerate(bundle.item_ids) if item_id not in seed_ids],
+            dtype=np.int32,
+        )
+        content_order = candidates[
+            np.lexsort((bundle.item_ids[candidates], -reference_scores[candidates]))
+        ]
+        popularity_order = candidates[
+            np.argsort(
+                np.asarray(
+                    [bundle.catalog[index]["recent_30d_interactions"] for index in candidates]
+                )
+                * -1,
+                kind="stable",
+            )
+        ]
+        content_rank = np.zeros(len(bundle.item_ids), dtype=np.float32)
+        popularity_rank = np.zeros(len(bundle.item_ids), dtype=np.float32)
+        content_rank[content_order] = np.arange(len(candidates), 0, -1) / len(candidates)
+        popularity_rank[popularity_order] = np.arange(len(candidates), 0, -1) / len(candidates)
+        weight = float(bundle.manifest["content_rank_weight"])
+        combined = (1.0 - weight) * popularity_rank + weight * content_rank
+        expected = bundle.item_ids[
+            candidates[np.lexsort((bundle.item_ids[candidates], -combined[candidates]))[:20]]
+        ].tolist()
+        actual = [row["item_id"] for row in bundle.recommend(seed_ids, k=20)["recommendations"]]
+        if expected != actual:
+            raise RuntimeError(
+                "Serving rank order differs from the independent fixed-profile reference"
+            )
+    result = {
+        "status": "verified locally",
+        "model_version": bundle.manifest["model_version"],
+        "catalog_items": len(bundle.catalog),
+        "feature_matrix_shape": list(bundle.features.shape),
+        "bundle_file_bytes": size,
+        "bundle_limit_bytes": 100 * 1024 * 1024,
+        "baseline_process_rss_mib": psutil.Process().memory_info().rss / (1024**2),
+        "smoke_profiles": ["empty", "one seed", "two seeds"],
+        "fixed_profile_rank_parity": True,
+        "user_factors_exported": False,
+        "user_identifiers_exported": False,
+    }
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="game-discovery",
@@ -370,6 +476,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     evaluate.add_argument("--config", type=Path, default=Path("configs/portfolio.yaml"))
     train = commands.add_parser("train", help="Train configured CPU recommendation models.")
     train.add_argument("--config", type=Path, default=Path("configs/portfolio.yaml"))
+    export_command = commands.add_parser(
+        "export", help="Refit the frozen validation choice and export an item-only bundle."
+    )
+    export_command.add_argument("--config", type=Path, default=Path("configs/portfolio.yaml"))
+    export_command.add_argument("--output", type=Path)
+    verify = commands.add_parser("verify-release", help="Verify a local model bundle and smoke it.")
+    verify.add_argument("--bundle", type=Path, default=Path("models/release/selected_candidate"))
     args = parser.parse_args(argv)
     if args.command == "doctor":
         return _doctor()
@@ -383,6 +496,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _evaluate(args.split, args.config)
     if args.command == "train":
         return _train(args.config)
+    if args.command == "export":
+        return _export_release(args.config, args.output)
+    if args.command == "verify-release":
+        return _verify_release(args.bundle)
     return 2
 
 

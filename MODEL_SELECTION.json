@@ -39,6 +39,6 @@
     "point_estimate_passed": true,
     "statistically_established_gain": false
   },
-  "test_partition_opened": false,
+  "test_partition_opened_at_freeze": false,
   "metadata_track": "static metadata; historical availability is not established"
 }

@@ -55,6 +55,21 @@ ALS training ran all eight planned configurations on CPU. In the integrated CLI 
 
 The committed [MODEL_SELECTION.md](MODEL_SELECTION.md) freezes the validation choice and constraints. Detailed reports and private per-user contributions are ignored local files under `artifacts/reports` and `private/evaluation`.
 
+## Frozen final-test result
+
+After freezing the selection record, the chosen candidate was refit on train plus validation and exported as an item-only bundle. The final test was then evaluated once, using only pre-cutoff-B history and the catalog observed before cutoff B.
+
+| Model | Warm NDCG@10 | Warm Recall@10 | Warm HitRate@10 | All-target Recall@10 | Catalog coverage@10 | Tail exposure@10 |
+|---|---:|---:|---:|---:|---:|---:|
+| Recent-30-day popularity | 0.02769 | 0.05283 | 0.08374 | 0.04927 | 0.00255 | 0.0000 |
+| **Frozen content/popularity candidate** | **0.05152** | **0.09912** | **0.14399** | **0.06758** | **0.02269** | **0.0119** |
+
+The paired warm NDCG@10 difference is +0.02383 (95% CI +0.02106 to +0.02674; 10,556 warm users, 2,000 user-bootstrap resamples, seed 1729). This test result is reported as an untouched holdout result; it was not used to adjust the model or its weight. The test window has 25,193 future-target users; 8,950 target events are outside the pre-cutoff catalog, 4,827 users have no reachable target, and 12,389 users have no prior history. The catalog at cutoff B contains 8,637 items.
+
+The selected candidate's test coverage is about 8.9 times the baseline's, with 1.19% of top-10 exposure going to the bottom 80% popularity tail versus zero for the baseline. Its test recommendation mean popularity and exposure concentration are also recorded in the local test report. Results are from one user-hash portfolio sample and one future window; the static metadata snapshot has no as-of timestamp, and review events do not prove user preference.
+
+The release bundle is 3,838,684 bytes (about 3.66 MiB) on disk, below the 100 MiB goal. Its sparse feature payload is 1,960,320 bytes uncompressed. A local post-load process RSS measurement was 175.2 MiB, below the 400 MiB serving goal. The full final-test evaluation took 255.96 seconds and peaked at 387.7 MiB RSS; this is an offline evaluation measurement, not serving latency.
+
 ## Reproduction
 
 ```powershell
@@ -62,6 +77,9 @@ uv sync --extra train --extra dev
 uv run game-discovery data split --config configs/portfolio.yaml
 uv run game-discovery evaluate --split validation --config configs/portfolio.yaml
 uv run game-discovery train --config configs/portfolio.yaml
+uv run game-discovery export --config configs/portfolio.yaml
+uv run game-discovery verify-release --bundle models/release/selected_candidate
+uv run game-discovery evaluate --split test --config configs/portfolio.yaml
 ```
 
 The baseline report and per-user bootstrap contributions are under ignored `artifacts/reports/validation_baselines.json` and `private/evaluation/validation_baselines.parquet`. Per-user values contain private pseudonymous user keys and must remain local. Aggregate outputs remain local until data-derived publication permission is resolved.

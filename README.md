@@ -6,18 +6,18 @@ The prediction target is a **future review interaction**. A review is evidence o
 
 ## Project status
 
-M0 bootstrap and M1 real-data preparation are complete locally. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for the executed commands, measured data counts and remaining gates. Model training, evaluation, application and deployment have not been completed; no recommendation performance or deployment results are claimed.
+M0 through M4 are complete locally: real data preparation, chronological evaluation, CPU model comparisons, a frozen validation selection, an item-only refit bundle and one final-test run. The static-metadata/content candidate beat recent popularity on the single final-test window, with the limitations in [EVALUATION.md](EVALUATION.md). The FastAPI/browser product and deployment are still in progress; no cloud verification is claimed. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for commands, measured evidence and remaining gates.
 
 ## Planned local setup
 
-The project targets Python 3.11 and `uv`:
+The project targets Python 3.11 and `uv`; Docker Desktop is available for local container work:
 
 ```powershell
 uv sync --extra train --extra dev
 uv run game-discovery doctor
 ```
 
-The runtime needed to create and validate `uv.lock` is not currently available in the implementation environment. Install Python 3.11 and `uv`, then regenerate the lock before treating the environment as reproducible.
+Training and dev dependencies are recorded in `uv.lock`. The local commands above are available in the implementation environment.
 
 ## Data and attribution
 

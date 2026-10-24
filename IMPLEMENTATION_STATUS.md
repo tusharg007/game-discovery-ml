@@ -4,9 +4,9 @@ Updated: 2026-10-25 (Asia/Calcutta)
 
 Source plan: `E:\Game Discovery\GAME_DISCOVERY_IMPLEMENTATION_PLAN.md` (kept outside this separate repository).
 
-## Current milestone: M4 — Audit and export
+## Current milestone: M5 — Product
 
-M0, M1, M2, and the M3 validation-selection gate have passed locally. The final test partition remains unopened.
+M0–M4 have passed locally. M3 selection was frozen before the single M4 final-test run. The product remains local and no cloud deployment is claimed.
 
 ## M0 — Bootstrap
 
@@ -68,11 +68,23 @@ The UCSD page requests citation but does not state an explicit redistribution li
 
 ### M4 — Audit and export (next)
 
-1. Refit the frozen candidate on train + validation without changing its selection record; export an item-only, user-factor-free serving bundle.
-2. Implement exact seed-profile inference and verify score/ranking parity with fixed examples.
-3. Open the test partition once after recording all selection settings; report paired uncertainty, cohorts, exposure and robustness cases.
-4. Measure release bundle size, baseline resident memory and serving latency.
+Completed locally on 2026-10-25:
+
+- Refit the frozen candidate on train + validation with `uv run game-discovery export --config configs/portfolio.yaml`. The export contains 8,637 catalog items and 9,620 TF-IDF features, uses the selection-recorded 10% content rank weight and 30-day popularity, and exports no user IDs, histories or user factors.
+- Bundle: 3,838,684 bytes (about 3.66 MiB); uncompressed sparse features 1,960,320 bytes. Refit took 0.56 seconds. `uv run game-discovery verify-release --bundle models/release/selected_candidate` passed; fixed one- and three-seed profile rank parity passed. Loaded process RSS was 175.2 MiB.
+- Before opening the test partition, `uv run pytest --basetemp tests/.pytest-tmp -q` passed 16 tests and Ruff checks passed. The tests include a synthetic frozen-test evaluator fixture.
+- The one-time command `uv run game-discovery evaluate --split test --config configs/portfolio.yaml` completed in 255.96 seconds at 387.7 MiB peak RSS. The selected candidate reached warm NDCG@10 0.05152 versus 0.02769 for recent-30-day popularity; paired difference +0.02383 (95% CI +0.02106 to +0.02674, 10,556 warm users). Test results did not change the frozen candidate.
+- Test reachability: 25,193 future-target users, 8,950 unreachable events, 4,827 users without reachable targets and 12,389 without history. Full aggregate metrics are in [EVALUATION.md](EVALUATION.md); per-user rows and detailed output remain ignored/private.
+- M4 does not claim serving latency; only offline recommendation generation, bundle size and post-load RSS have been measured.
+- After the final-test run, additional synthetic robustness cases for all-candidates-excluded, unknown-only seeds and corrupt catalog hashes passed; the current full suite is 18 passed. These tests did not access or change final-test metrics or model selection.
+
+### M5 — Product (next)
+
+1. Build FastAPI catalog search and recommendation endpoints that load this verified bundle, handle unknown/empty/sparse profiles and expose explanations plus model/data limitations.
+2. Add a static browser interface with up-to-20 seed selection, exclusions, same-input model comparison and actual aggregate charts.
+3. Implement anonymous feedback with a visible retention notice, or leave it clearly disabled until durable storage is available.
+4. Add API/UI tests and a local Docker container. Keep user-specific events out of versioned serving artifacts.
 
 ## Evidence integrity
 
-No final-test results, UI screenshots, resource IDs, actual cloud costs, deployment URL or cloud verification are claimed.
+No UI screenshots, resource IDs, actual cloud costs, deployment URL or cloud verification are claimed.
