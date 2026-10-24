@@ -4,9 +4,9 @@ Updated: 2026-10-25 (Asia/Calcutta)
 
 Source plan: `E:\Game Discovery\GAME_DISCOVERY_IMPLEMENTATION_PLAN.md` (kept outside this separate repository).
 
-## Current milestone: M6 — Lifecycle
+## Current milestone: M6 — Lifecycle (local evidence complete; cloud event store gated)
 
-M0–M5 have passed locally. M3 selection was frozen before the single M4 final-test run. The product remains local and no cloud deployment is claimed.
+M0–M5 have passed locally. M3 selection was frozen before the single M4 final-test run. Local M6 monitoring and promotion work is implemented; cloud feedback remains disabled because no protected free account is confirmed. The product remains local and no cloud deployment is claimed.
 
 ## M0 — Bootstrap
 
@@ -86,15 +86,25 @@ Completed locally on 2026-10-25:
 - Added a multi-stage local Docker image with pinned Node/Python base digests, locked frontend/Python dependencies, non-root runtime, readiness healthcheck, configurable `PORT`, one Uvicorn worker and single-thread numerical libraries. Raw data, private mappings, user histories and training dependencies are excluded from the image.
 - `docker build -t game-discovery:local .` passed. The local image is 193,069,748 bytes (`sha256:d98ef78c41cdb726b9c96e1ab7ff3527fd9d28288c7eb34164a98ef02c8cde`); the in-container content-feature SHA-256 matches the local refit bundle. Container smoke verified healthy readiness, non-root UID 10001, actual catalog search/tail slice, saved final-test aggregate, seeded recommendation scores/explanations and disabled-feedback status. Browser inspection captured real model comparisons and the saved evaluation charts from the running app.
 - Frontend: `npm ci`, `npm run typecheck`, `npm run build` and `npm audit --audit-level=high` passed in the Docker Node image; audit reported zero vulnerabilities. Python: 23 tests passed; Ruff check and format checks passed. Starlette emitted a deprecation warning for its TestClient/httpx integration.
-- No cloud account/resources, external feedback persistence, request-capacity benchmark, deployment URL or cloud verification is claimed. M6 is next: durable-store decision, monitoring replay, promotion/rejection and rollback evidence.
+- No cloud account/resources, external feedback persistence, request-capacity benchmark, deployment URL or cloud verification is claimed. M6 continues below.
+
+### M6 — Lifecycle (local components implemented; external store gated)
+
+- Added a common create-if-absent event-store protocol and a local directory adapter. Its hard-link create path is atomic across concurrent local writers; records use server receipt time and a 30-day local retention sweep. A restart test creates an event in one app process and verifies a duplicate against a new store/app instance.
+- Added 30-minute HMAC-SHA256 impression tokens bound to model version and ranked item IDs, strict bounded feedback schemas, item attribution checks, secret-rotation/expiry tests and a best-effort 30-event-per-session-per-minute process limiter. Records do not include request IPs. The default serving app has no store or secret and continues to return HTTP 503 with `persisted: false`; LocalEventStore is explicitly marked `local_test_only`.
+- Added `game-discovery monitor replay` for synthetic unknown-item, fallback, score and popularity shifts plus a stable control. Reports carry `event_stream: synthetic_test`, require 1,000 fixture samples and remain isolated from real-demo events. The saved popularity replay alerted on JSD `0.1742` against threshold `0.10`; the stable control emitted no alert.
+- Added a 2% relative-NDCG promotion gate and a filesystem promotion ledger that retains rejected artifacts, checks artifact hashes and restores an earlier version on rollback. Synthetic tests cover regression rejection, accepted promotion, hash verification and rollback. A saved validation-only demo rejected the recent-30-day popularity candidate at -3.23% relative warm NDCG@10 against the frozen content/popularity candidate; active selection and release bundle stayed unchanged. The demo used validation outputs only and did not read the final-test report.
+- Read-only Azure CLI preflight found the selected subscription enabled, with no quota ID or spending limit exposed and no student offer confirmed. `gcloud` and `aws` CLIs are absent, so alternate account eligibility is unverified. Sanitized evidence is in ignored `artifacts/deployment/cost_preflight.json`. No resource was provisioned, no billing setting changed and no paid service was enabled.
+- Checks: 36 Python tests passed; Ruff check and format passed. The Docker Node image passed frontend typecheck, Vite build and npm audit (zero vulnerabilities). Synthetic replay and validation promotion CLI commands ran and saved ignored local reports. These results do not establish real-user drift, a production rate limit or external persistence.
+- The cloud EventStore adapter and restart/duplicate checks against an eligible Azure/GCP/AWS object store remain gated on verifying a protected free account. Keep `/v1/events` disabled in the container until that account gate passes; do not configure an ephemeral container filesystem as durable storage.
 
 ## Next actions
 
 ### M6 — Lifecycle
 
-- Select and verify a permitted private durable event store only after a protected-free-account preflight; otherwise retain the current read-only feedback-disabled mode.
-- Implement separate real-demo, replay and synthetic-test event streams, bounded retention, signed impression attribution and truthful duplicate/storage-failure behavior.
-- Add local drift replay evidence, candidate promotion/rejection and rollback tests without altering the frozen M3 selection or one-time M4 test result.
+- Verify whether an eligible protected-free Azure, GCP or AWS account is available. If none is available, keep the cloud event store explicitly incomplete and the API read-only.
+- If the account gate passes, add its private object-store adapter with 30-day lifecycle expiry and run persistence/duplicate tests across container replacement. Keep the replay and synthetic-test streams separate.
+- The local drift replay, promotion/rejection and rollback mechanisms are complete; do not use M4 test outcomes to retrain or change selection.
 - Keep the data redistribution review open; do not publish data-derived artifacts until it is resolved.
 
 ## Evidence integrity

@@ -8,6 +8,8 @@ The prediction target is a **future review interaction**. A review is evidence o
 
 M0 through M5 are implemented locally: real data preparation, chronological evaluation, CPU model comparisons, a frozen validation selection, an item-only refit bundle, one final-test run and a containerized FastAPI/browser app. The static-metadata/content candidate beat recent popularity on the single final-test window, with the limitations in [EVALUATION.md](EVALUATION.md). Anonymous feedback is intentionally disabled because no durable store is configured. No cloud deployment is claimed. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for evidence and remaining gates.
 
+M6 adds local signed-feedback storage tests, synthetic drift replay, and promotion/rejection/rollback checks. Cloud feedback remains disabled: the read-only Azure account preflight did not confirm a protected student offer or spending limit, and alternate provider CLIs are unavailable.
+
 ## Planned local setup
 
 The project targets Python 3.11 and `uv`; Docker Desktop is available for local container work:

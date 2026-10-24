@@ -69,7 +69,7 @@ function explanation(item) {
   return shared.length ? `${item.explanation} (${shared.map(escapeHtml).join(", ")})` : escapeHtml(item.explanation || "Ranked from historical signals.");
 }
 
-function recommendationCard(item, index, previousRanks) {
+function recommendationCard(item, index, previousRanks, feedbackToken = null) {
   const earlierRank = previousRanks.get(item.item_id);
   let movement = "";
   if (earlierRank !== undefined && earlierRank !== index + 1) {
@@ -77,11 +77,13 @@ function recommendationCard(item, index, previousRanks) {
     movement = `<span class="rank-change ${direction}" aria-label="Moved from rank ${earlierRank}">${direction === "up" ? "↑" : "↓"} #${earlierRank}</span>`;
   }
   const tags = (item.genres || []).slice(0, 3).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
-  return `<article class="recommendation-card"><div class="recommendation-top"><span class="rank-number">${index + 1}</span><div class="recommendation-title">${escapeHtml(item.title)}<span class="recommendation-id">ID ${escapeHtml(item.item_id)}${item.release_date ? ` · ${escapeHtml(item.release_date)}` : ""}</span></div>${movement}</div><div class="tag-row">${tags}</div><div class="reason">${explanation(item)}</div><div class="score">Ranking score ${Number(item.ranking_score).toFixed(4)} · not a probability</div></article>`;
+  const feedback = feedbackToken ? `<div class="feedback-actions" aria-label="Anonymous feedback for ${escapeHtml(item.title)}"><button type="button" data-feedback="click" data-item="${escapeHtml(item.item_id)}" data-token="${escapeHtml(feedbackToken)}">Interesting</button><button type="button" data-feedback="save" data-item="${escapeHtml(item.item_id)}" data-token="${escapeHtml(feedbackToken)}">Save</button><button type="button" data-feedback="dismiss" data-item="${escapeHtml(item.item_id)}" data-token="${escapeHtml(feedbackToken)}">Dismiss</button></div>` : "";
+  return `<article class="recommendation-card"><div class="recommendation-top"><span class="rank-number">${index + 1}</span><div class="recommendation-title">${escapeHtml(item.title)}<span class="recommendation-id">ID ${escapeHtml(item.item_id)}${item.release_date ? ` · ${escapeHtml(item.release_date)}` : ""}</span></div>${movement}</div><div class="tag-row">${tags}</div><div class="reason">${explanation(item)}</div><div class="score">Ranking score ${Number(item.ranking_score).toFixed(4)} · not a probability</div>${feedback}</article>`;
 }
 
 function renderColumn(label, note, result, previousRanks, champion = false) {
-  const cards = result.recommendations.map((item, index) => recommendationCard(item, index, previousRanks)).join("");
+  const feedbackToken = champion && result.feedback_enabled ? result.impression_token : null;
+  const cards = result.recommendations.map((item, index) => recommendationCard(item, index, previousRanks, feedbackToken)).join("");
   const fallback = result.fallback_reason ? `<div class="fallback-banner">Fallback: ${escapeHtml(result.fallback_reason.replaceAll("_", " "))}</div>` : "";
   return `<section class="model-column ${champion ? "champion" : ""}"><header class="model-head"><div class="model-label">${champion ? "Selected model" : "Comparison"}</div><h3>${escapeHtml(label)}</h3><p>${escapeHtml(note)}</p><div class="model-version">${escapeHtml(result.mode)} · ${Number(result.server_processing_ms).toFixed(1)} ms</div></header>${fallback}${cards || '<div class="empty-results">No eligible games matched this request.</div>'}</section>`;
 }
@@ -113,6 +115,19 @@ async function getRecommendations() {
     if (als) columns.push(renderColumn("ALS reference", "Collaborative item factors; trained at the earlier validation cutoff.", als, championRanks, false));
     columns.push(renderColumn("Game Discovery", "Frozen content and recent-activity rank fusion.", champion, new Map(), true));
     $("#comparison-grid").innerHTML = columns.join("");
+    document.querySelectorAll<HTMLButtonElement>("#comparison-grid [data-feedback]").forEach((button) => button.addEventListener("click", async () => {
+      button.disabled = true;
+      try {
+        const response = await api("/v1/events", { method: "POST", body: JSON.stringify({
+          event_id: crypto.randomUUID(), event_type: button.dataset.feedback, item_id: button.dataset.item,
+          impression_token: button.dataset.token,
+        }) });
+        showStatus(response.duplicate ? "This feedback event was already saved." : `Anonymous feedback saved. It is retained for up to ${response.retention_days} days.`, "success");
+      } catch (error) {
+        showStatus(`Feedback was not saved: ${error.message}`, "error");
+        button.disabled = false;
+      }
+    }));
     $("#result-model-version").textContent = champion.model_version;
     $("#recommendation-section").hidden = false;
     $("#recommendation-section").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -158,6 +173,17 @@ function setView(view) {
   if (view === "evaluation" && state.modelInfo) renderEvaluation(state.modelInfo);
 }
 
+function renderFeedbackNotice(feedback) {
+  const note = $("#feedback-note");
+  if (!feedback?.enabled) {
+    note.innerHTML = "<strong>Feedback is off.</strong> This demo does not save clicks or preferences.";
+  } else if (feedback.mode === "local_test_only") {
+    note.innerHTML = "<strong>Local test feedback is on.</strong> Actions are stored only in the local test directory and expire after 30 days; do not use this mode for a public demo.";
+  } else {
+    note.innerHTML = `<strong>Anonymous feedback is on.</strong> Actions on the selected model may be stored without an account for up to ${Number(feedback.retention_days || 30)} days. Small demo feedback is self-reported and is not proof of preference.`;
+  }
+}
+
 function setExample(name) {
   if (name === "failure") {
     state.selected = [];
@@ -196,6 +222,7 @@ async function initialize() {
     state.catalog = catalog.items;
     state.nicheCatalog = nicheCatalog.items;
     state.modelInfo = modelInfo;
+    renderFeedbackNotice(modelInfo.feedback);
     $("#footer-version").textContent = `Model ${modelInfo.model_version} · catalog ${modelInfo.catalog_version}`;
     const genres = [...new Set(state.catalog.flatMap((item) => item.genres))].sort((a, b) => a.localeCompare(b));
     $("#genre-options").innerHTML = genres.map((genre) => `<option value="${escapeHtml(genre)}"></option>`).join("");

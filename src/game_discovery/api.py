@@ -4,15 +4,23 @@ import json
 import os
 import time
 from collections import Counter, defaultdict
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, ValidationError
 
+from game_discovery.events.base import EventStore
+from game_discovery.events.local import LocalEventStore
+from game_discovery.events.tokens import (
+    InvalidImpressionToken,
+    create_impression_token,
+    verify_impression_token,
+)
 from game_discovery.serving.bundle import RecommendationBundle
 
 
@@ -27,6 +35,7 @@ class RecommendationRequest(BaseModel):
 class FeedbackRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    event_id: UUID
     event_type: Literal["click", "save", "dismiss"]
     item_id: StrictStr = Field(min_length=1, max_length=64)
     impression_token: StrictStr = Field(min_length=1, max_length=2048)
@@ -68,7 +77,14 @@ def create_app(
     als_model_dir: Path | None = None,
     evaluation_path: Path | None = None,
     web_dir: Path | None = None,
+    event_store: EventStore | None = None,
+    event_signing_secret: bytes | str | None = None,
+    event_stream: Literal["real_demo", "replay", "synthetic_test"] = "real_demo",
 ) -> FastAPI:
+    if event_stream not in ("real_demo", "replay", "synthetic_test"):
+        raise ValueError("event_stream must be real_demo, replay or synthetic_test")
+    if isinstance(event_store, LocalEventStore) and event_stream != "synthetic_test":
+        raise ValueError("LocalEventStore is restricted to the synthetic_test stream")
     selected_bundle_dir = bundle_dir or Path(
         os.environ.get("GAME_DISCOVERY_BUNDLE", "models/release/selected_candidate")
     )
@@ -79,6 +95,11 @@ def create_app(
         os.environ.get("GAME_DISCOVERY_EVALUATION", "artifacts/reports/final_test.json")
     )
     selected_web_dir = web_dir or Path(__file__).parent / "web"
+    configured_secret = event_signing_secret
+    if configured_secret is None:
+        configured_secret = os.environ.get("GAME_DISCOVERY_EVENT_SIGNING_SECRET")
+    if isinstance(configured_secret, str):
+        configured_secret = configured_secret.encode("utf-8")
     app = FastAPI(
         title="Game Discovery",
         version="0.1.0",
@@ -90,6 +111,18 @@ def create_app(
     app.state.als_model = None
     app.state.artifact_error = None
     app.state.public_evaluation = _load_public_evaluation(selected_evaluation_path)
+    app.state.event_store = event_store
+    app.state.event_stream = event_stream
+    app.state.event_signing_secret = configured_secret
+    app.state.feedback_enabled = event_store is not None and configured_secret is not None
+    app.state.feedback_mode = (
+        "disabled"
+        if not app.state.feedback_enabled
+        else "local_test_only"
+        if isinstance(event_store, LocalEventStore)
+        else "configured_store"
+    )
+    app.state.event_rate_limit: dict[str, tuple[int, int]] = {}
     app.state.request_counts = Counter()
     app.state.request_duration_sum = defaultdict(float)
     app.state.fallback_count = 0
@@ -272,7 +305,7 @@ def create_app(
         elapsed_ms = (time.perf_counter() - started) * 1000
         if result.get("fallback_reason"):
             app.state.fallback_count += 1
-        return {
+        response = {
             "request_id": str(uuid4()),
             "model_version": result["model_version"],
             "catalog_version": catalog_version,
@@ -284,7 +317,15 @@ def create_app(
             "returned_count": len(result["recommendations"]),
             "server_processing_ms": elapsed_ms,
             "recommendations": result["recommendations"],
+            "feedback_enabled": app.state.feedback_enabled,
         }
+        if app.state.feedback_enabled and result["recommendations"]:
+            response["impression_token"] = create_impression_token(
+                secret=app.state.event_signing_secret,
+                model_version=result["model_version"],
+                item_ids=[item["item_id"] for item in result["recommendations"]],
+            )
+        return response
 
     @app.get("/v1/model-info")
     def model_info() -> dict[str, Any]:
@@ -303,19 +344,89 @@ def create_app(
                 "The ALS comparison model is a validation-era reference and is not the selected champion.",
                 "No causal engagement or purchase outcome is measured.",
             ],
-            "feedback": {"enabled": False, "reason": "No durable feedback store is configured."},
+            "feedback": {
+                "enabled": app.state.feedback_enabled,
+                "mode": app.state.feedback_mode,
+                "retention_days": 30 if app.state.feedback_enabled else None,
+                "per_session_per_minute": 30 if app.state.feedback_enabled else None,
+                "rate_limit_distributed": False,
+                "reason": None
+                if app.state.feedback_enabled
+                else "No event store and signing secret are configured.",
+            },
             "evaluation": app.state.public_evaluation,
         }
 
     @app.post("/v1/events")
-    def events_disabled(payload: FeedbackRequest | None = None) -> JSONResponse:
-        del payload
+    async def submit_event(request: Request) -> JSONResponse:
+        if not app.state.feedback_enabled:
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "status": "disabled",
+                    "persisted": False,
+                    "reason": "No event store and signing secret are configured.",
+                },
+            )
+        body = await request.body()
+        if len(body) > 8192:
+            raise HTTPException(status_code=413, detail="Feedback event body exceeds 8 KiB")
+        try:
+            payload = FeedbackRequest.model_validate_json(body)
+        except ValidationError as exc:
+            raise HTTPException(status_code=422, detail="Invalid feedback event schema") from exc
+        try:
+            impression = verify_impression_token(
+                payload.impression_token,
+                secret=app.state.event_signing_secret,
+                item_id=payload.item_id,
+            )
+        except InvalidImpressionToken as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        current_minute = int(time.time() // 60)
+        stale_sessions = [
+            session_id
+            for session_id, (minute, _) in app.state.event_rate_limit.items()
+            if minute < current_minute - 1
+        ]
+        for session_id in stale_sessions:
+            del app.state.event_rate_limit[session_id]
+        minute, count = app.state.event_rate_limit.get(
+            impression["session_id"], (current_minute, 0)
+        )
+        if minute != current_minute:
+            minute, count = current_minute, 0
+        if count >= 30:
+            raise HTTPException(status_code=429, detail="Feedback rate limit exceeded")
+        app.state.event_rate_limit[impression["session_id"]] = (minute, count + 1)
+        if len(app.state.event_rate_limit) > 5000:
+            oldest = sorted(
+                app.state.event_rate_limit,
+                key=lambda session_id: app.state.event_rate_limit[session_id][0],
+            )[:1000]
+            for session_id in oldest:
+                del app.state.event_rate_limit[session_id]
+        record = {
+            "event_id": str(payload.event_id),
+            "event_type": payload.event_type,
+            "item_id": payload.item_id,
+            "rank": impression["item_ids"].index(payload.item_id) + 1,
+            "session_id": impression["session_id"],
+            "model_version": impression["model_version"],
+            "received_at": datetime.now(UTC).isoformat(),
+            "event_stream": app.state.event_stream,
+        }
+        try:
+            created = app.state.event_store.put_if_absent(str(payload.event_id), record)
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise HTTPException(status_code=503, detail="Feedback storage failed") from exc
         return JSONResponse(
-            status_code=503,
+            status_code=201 if created else 200,
             content={
-                "status": "disabled",
-                "persisted": False,
-                "reason": "No durable feedback store is configured.",
+                "status": "persisted" if created else "duplicate",
+                "persisted": True,
+                "duplicate": not created,
+                "retention_days": 30,
             },
         )
 

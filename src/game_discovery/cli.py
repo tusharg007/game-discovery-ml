@@ -474,6 +474,84 @@ def _export_als_comparison(training_report: Path, output_dir: Path) -> int:
     return 0
 
 
+def _monitor_replay(scenario: str, output: Path) -> int:
+    from game_discovery.monitoring.drift import run_monitor_replay
+
+    report = run_monitor_replay(scenario, output)
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
+def _promotion_demo(validation_hybrids: Path, validation_baselines: Path, output: Path) -> int:
+    from tempfile import TemporaryDirectory
+
+    from game_discovery.monitoring.promotion import PromotionLedger, evaluate_promotion_gate
+
+    hybrids = json.loads(validation_hybrids.read_text(encoding="utf-8"))
+    baselines = json.loads(validation_baselines.read_text(encoding="utf-8"))
+    if (
+        hybrids.get("evaluation_split") != "validation"
+        or baselines.get("evaluation_split") != "validation"
+    ):
+        raise RuntimeError("promotion demo accepts validation reports only")
+    champion_name = "hybrid_recent30_content_w10"
+    candidate_name = "recent_popularity_30d"
+    champion_metrics = hybrids["models"][champion_name]["warm_catalog_ranking"]
+    candidate_metrics = baselines["models"][candidate_name]["warm_catalog_ranking"]
+    gate = evaluate_promotion_gate(champion_metrics, candidate_metrics)
+    with TemporaryDirectory(prefix="game-discovery-promotion-demo-") as temporary_directory:
+        demo_dir = Path(temporary_directory)
+        ledger_dir = demo_dir / "registry"
+        artifact_dir = ledger_dir / "artifacts"
+        artifact_dir.mkdir(parents=True)
+        initial_artifact = artifact_dir / "champion.fixture"
+        regressing_artifact = artifact_dir / "rejected.fixture"
+        promoted_artifact = artifact_dir / "candidate.fixture"
+        initial_artifact.write_bytes(b"synthetic champion fixture")
+        regressing_artifact.write_bytes(b"synthetic regressing fixture")
+        promoted_artifact.write_bytes(b"synthetic accepted fixture")
+        ledger = PromotionLedger(ledger_dir)
+        ledger.initialize("fixture-champion-v1", initial_artifact)
+        rejection = ledger.promote(
+            "fixture-rejected-v2",
+            regressing_artifact,
+            {"mean_ndcg@10": 1.0},
+            {"mean_ndcg@10": 0.97},
+        )
+        accepted = ledger.promote(
+            "fixture-candidate-v2",
+            promoted_artifact,
+            {"mean_ndcg@10": 1.0},
+            {"mean_ndcg@10": 1.01},
+        )
+        rollback = ledger.rollback("fixture-champion-v1")
+        rollback_demo = {
+            "event_stream": "synthetic_test",
+            "rejected_version_preserved": rejection["version"]
+            in [row["version"] for row in ledger.read()["rejected_candidates"]],
+            "active_after_rejection": rejection["active_version"],
+            "active_after_acceptance": accepted["active_version"],
+            "active_after_rollback": rollback["active_version"],
+        }
+    report = {
+        "event_stream": "offline_validation",
+        "evaluation_split": "validation",
+        "fitting_cutoff": hybrids["fitting_cutoff"],
+        "champion": champion_name,
+        "candidate": candidate_name,
+        "candidate_artifact_description": "Training-only 30-day popularity counts; no user factors or IDs.",
+        "promotion_gate": gate,
+        "synthetic_test_rollback": rollback_demo,
+        "active_model_unchanged": not gate["accepted"],
+        "final_test_read": False,
+        "note": "This demonstration evaluates the frozen validation window only; it does not modify the release bundle or selection record.",
+    }
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="game-discovery",
@@ -517,6 +595,39 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--training-report", type=Path, default=Path("artifacts/reports/als_training.json")
     )
     export_als.add_argument("--output", type=Path, default=Path("models/release/alternates/als"))
+    monitor = commands.add_parser(
+        "monitor", help="Replay drift checks and promotion lifecycle examples."
+    )
+    monitor_commands = monitor.add_subparsers(dest="monitor_command", required=True)
+    replay = monitor_commands.add_parser("replay", help="Run an isolated synthetic drift replay.")
+    replay.add_argument(
+        "--scenario",
+        choices=(
+            "stable-control",
+            "unknown-item-shift",
+            "fallback-rate-shift",
+            "score-shift",
+            "popularity-shift",
+        ),
+        required=True,
+    )
+    replay.add_argument("--output", type=Path)
+    promotion_demo = monitor_commands.add_parser(
+        "promotion-demo", help="Demonstrate a validation-only regression rejection."
+    )
+    promotion_demo.add_argument(
+        "--validation-hybrids", type=Path, default=Path("artifacts/reports/validation_hybrids.json")
+    )
+    promotion_demo.add_argument(
+        "--validation-baselines",
+        type=Path,
+        default=Path("artifacts/reports/validation_baselines.json"),
+    )
+    promotion_demo.add_argument(
+        "--output",
+        type=Path,
+        default=Path("artifacts/deployment/rejected_candidate_validation.json"),
+    )
     args = parser.parse_args(argv)
     if args.command == "doctor":
         return _doctor()
@@ -536,6 +647,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _verify_release(args.bundle)
     if args.command == "export-als-comparison":
         return _export_als_comparison(args.training_report, args.output)
+    if args.command == "monitor" and args.monitor_command == "replay":
+        output = args.output or Path(f"artifacts/reports/monitor_replay_{args.scenario}.json")
+        return _monitor_replay(args.scenario, output)
+    if args.command == "monitor" and args.monitor_command == "promotion-demo":
+        return _promotion_demo(args.validation_hybrids, args.validation_baselines, args.output)
     return 2
 
 

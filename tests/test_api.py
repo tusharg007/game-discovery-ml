@@ -3,12 +3,14 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from uuid import uuid4
 
 import numpy as np
 import scipy.sparse as sp
 from fastapi.testclient import TestClient
 
 from game_discovery.api import create_app
+from game_discovery.events.local import LocalEventStore
 
 
 def _write_bundle(directory: Path) -> None:
@@ -113,7 +115,7 @@ def test_request_limits_metrics_and_disabled_events_are_explicit(tmp_path: Path)
     )
     assert event.status_code == 503
     assert event.json()["persisted"] is False
-    assert client.post("/v1/events", json={"free_text": "unbounded"}).status_code == 422
+    assert client.post("/v1/events", json={"free_text": "unbounded"}).status_code == 503
     metrics = client.get("/metrics")
     assert metrics.status_code == 200
     assert "game_discovery_requests_total" in metrics.text
@@ -124,3 +126,114 @@ def test_unavailable_bundle_fails_readiness_and_serving(tmp_path: Path):
     assert client.get("/healthz").status_code == 200
     assert client.get("/readyz").status_code == 503
     assert client.get("/v1/catalog").status_code == 503
+
+
+def test_feedback_token_storage_dedup_and_process_restart(tmp_path: Path):
+    bundle = tmp_path / "bundle"
+    _write_bundle(bundle)
+    event_dir = tmp_path / "events"
+    secret = b"stable-local-test-secret-32-bytes!"
+    first_client = TestClient(
+        create_app(
+            bundle,
+            event_store=LocalEventStore(event_dir),
+            event_signing_secret=secret,
+            event_stream="synthetic_test",
+        )
+    )
+    recommendation = first_client.post(
+        "/v1/recommendations", json={"seed_item_ids": ["1"], "k": 2}
+    ).json()
+    assert recommendation["feedback_enabled"] is True
+    first_item = recommendation["recommendations"][0]["item_id"]
+    payload = {
+        "event_id": str(uuid4()),
+        "event_type": "save",
+        "item_id": first_item,
+        "impression_token": recommendation["impression_token"],
+    }
+    created = first_client.post("/v1/events", json=payload)
+    assert created.status_code == 201
+    assert created.json()["persisted"] is True
+
+    restarted_client = TestClient(
+        create_app(
+            bundle,
+            event_store=LocalEventStore(event_dir),
+            event_signing_secret=secret,
+            event_stream="synthetic_test",
+        )
+    )
+    duplicate = restarted_client.post("/v1/events", json=payload)
+    assert duplicate.status_code == 200
+    assert duplicate.json()["duplicate"] is True
+    stored = LocalEventStore(event_dir).get(payload["event_id"])
+    assert stored["event_stream"] == "synthetic_test"
+    assert stored["model_version"] == "fixture-v1"
+    assert stored["rank"] == 1
+    assert "client_ip" not in stored
+    assert (
+        restarted_client.post("/v1/events", json={**payload, "free_text": "forbidden"}).status_code
+        == 422
+    )
+    assert (
+        restarted_client.post(
+            "/v1/events", json={**payload, "item_id": "not-in-impression"}
+        ).status_code
+        == 422
+    )
+
+
+def test_feedback_process_rate_limit_is_bounded_and_per_session(tmp_path: Path):
+    bundle = tmp_path / "bundle"
+    _write_bundle(bundle)
+    client = TestClient(
+        create_app(
+            bundle,
+            event_store=LocalEventStore(tmp_path / "events"),
+            event_signing_secret=b"stable-local-test-secret-32-bytes!",
+            event_stream="synthetic_test",
+        )
+    )
+    recommendation = client.post("/v1/recommendations", json={"seed_item_ids": ["1"]}).json()
+    event = {
+        "event_id": str(uuid4()),
+        "event_type": "click",
+        "item_id": recommendation["recommendations"][0]["item_id"],
+        "impression_token": recommendation["impression_token"],
+    }
+    for _ in range(30):
+        assert client.post("/v1/events", json=event).status_code in (200, 201)
+    assert client.post("/v1/events", json={**event, "event_id": str(uuid4())}).status_code == 429
+
+
+def test_feedback_storage_failure_is_reported_as_non_success(tmp_path: Path):
+    class BrokenEventStore:
+        def put_if_absent(self, event_id, record):
+            raise OSError("simulated storage outage")
+
+        def get(self, event_id):
+            return None
+
+    bundle = tmp_path / "bundle"
+    _write_bundle(bundle)
+    client = TestClient(
+        create_app(
+            bundle,
+            event_store=BrokenEventStore(),
+            event_signing_secret=b"stable-local-test-secret-32-bytes!",
+            event_stream="synthetic_test",
+        )
+    )
+    recommendation = client.post("/v1/recommendations", json={"seed_item_ids": ["1"]}).json()
+    event = client.post(
+        "/v1/events",
+        json={
+            "event_id": str(uuid4()),
+            "event_type": "dismiss",
+            "item_id": recommendation["recommendations"][0]["item_id"],
+            "impression_token": recommendation["impression_token"],
+        },
+    )
+    assert event.status_code == 503
+    assert event.json()["detail"] == "Feedback storage failed"
