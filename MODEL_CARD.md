@@ -1,6 +1,6 @@
 # Model card: portfolio hybrid content and popularity
 
-Updated 2026-10-25. Status: locally evaluated and served; no cloud deployment.
+Updated 2026-10-25. Status: evaluated locally and served in the live Render research demo. The [release record](deploy/render/release.json) and [POC walkthrough](docs/WALKTHROUGH.md) document the serving scope.
 
 ## Intended use
 
@@ -26,8 +26,8 @@ Selection was frozen before the one final-test run. On the warm catalog, final-t
 - Exposure and ranking reflect severe interaction imbalance and popularity concentration; tail exposure is low.
 - There are no randomized exposure logs, so feedback or rank differences do not establish causal engagement.
 - The evaluation covers one sampled dataset and one temporal window; it does not establish current Steam behavior or generalization to all players.
-- No serving load benchmark or cloud deployment has been completed.
+- No serving capacity benchmark has been completed. Bounded functional cloud checks and same-image deployment recovery are recorded separately from model evaluation.
 
 ## Serving and monitoring
 
-The selected item-only bundle is hash verified at startup. The local API reports the model and catalog version, supports fallback cases explicitly, and exposes a local-only metrics endpoint. Feedback is disabled by default. Synthetic drift replay and validation-only promotion rejection/rollback are demonstrations, not live user monitoring or model updates.
+The selected item-only bundle is hash verified at startup. The API reports model and catalog versions and supports explicit fallback cases. Operational metrics require an explicit local-only configuration. Feedback is disabled in the deployed demo. Synthetic drift replay and validation-only promotion rejection/rollback are demonstrations, not live user monitoring or model updates.

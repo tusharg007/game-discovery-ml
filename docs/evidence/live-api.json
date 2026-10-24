@@ -1,0 +1,1896 @@
+{
+  "captured_at_utc": "2026-10-24T22:24:51.380Z",
+  "base_url": "https://game-discovery-ml.onrender.com",
+  "purpose": "Public POC evidence using synthetic visitor inputs; existing model inference only. Saved evaluation is read, not rerun.",
+  "cases": [
+    {
+      "name": "readiness",
+      "method": "GET",
+      "path": "/readyz",
+      "status": 200,
+      "response": {
+        "status": "ready",
+        "model_version": "portfolio-hybrid-content-popularity-v1",
+        "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+        "als_comparison_available": true
+      }
+    },
+    {
+      "name": "model-info",
+      "method": "GET",
+      "path": "/v1/model-info",
+      "status": 200,
+      "response": {
+        "model_version": "portfolio-hybrid-content-popularity-v1",
+        "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+        "selected_candidate": "hybrid_recent30_content_w10",
+        "comparison_models": [
+          "recent30_popularity",
+          "implicit_als_validation_reference"
+        ],
+        "als_comparison_available": true,
+        "data_task": "future review-interaction ranking",
+        "limitations": [
+          "A review interaction does not establish that a user liked a game.",
+          "The catalog and item metadata are historical snapshots, not current storefront facts.",
+          "The selected content model uses an untimestamped historical metadata snapshot.",
+          "The ALS comparison model is a validation-era reference and is not the selected champion.",
+          "No causal engagement or purchase outcome is measured."
+        ],
+        "feedback": {
+          "enabled": false,
+          "mode": "disabled",
+          "retention_days": null,
+          "per_session_per_minute": null,
+          "rate_limit_distributed": false,
+          "reason": "No event store and signing secret are configured."
+        },
+        "evaluation": {
+          "evaluation_split": "test",
+          "split_manifest_sha256": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+          "candidate": {
+            "name": "hybrid_recent30_content_w10",
+            "warm_catalog_ranking": {
+              "mean_hit_rate@10": 0.14399393709738537,
+              "mean_hit_rate@20": 0.22697991663508904,
+              "mean_hit_rate@5": 0.08071239105721864,
+              "mean_ndcg@10": 0.05152307567669602,
+              "mean_ndcg@20": 0.06898098787197557,
+              "mean_ndcg@5": 0.03631161298642737,
+              "mean_recall@10": 0.09911986781727888,
+              "mean_recall@20": 0.16271909173829835,
+              "mean_recall@5": 0.05404803832383053
+            },
+            "mean_all_target_recall_by_user": {
+              "recall@10": 0.06758399712539129,
+              "recall@20": 0.1516474629219909,
+              "recall@5": 0.03900513239896678
+            },
+            "catalog_coverage_at_10": 0.022693064721546835,
+            "tail_exposure_share_at_10": 0.011856468066526417
+          },
+          "recent_30d_popularity_baseline": {
+            "warm_catalog_ranking": {
+              "mean_hit_rate@10": 0.08374384236453201,
+              "mean_hit_rate@20": 0.2087912087912088,
+              "mean_hit_rate@5": 0.04376657824933687,
+              "mean_ndcg@10": 0.027692635787394147,
+              "mean_ndcg@20": 0.05462097624574823,
+              "mean_ndcg@5": 0.018815574909293753,
+              "mean_recall@10": 0.05283029007652246,
+              "mean_recall@20": 0.15053097422173004,
+              "mean_recall@5": 0.027062253160432738
+            },
+            "mean_all_target_recall_by_user": {
+              "recall@10": 0.049268932434322635,
+              "recall@20": 0.14709816652055324,
+              "recall@5": 0.02835703474695032
+            },
+            "catalog_coverage_at_10": 0.0025471807340511753,
+            "tail_exposure_share_at_10": 0
+          },
+          "paired_ndcg_at_10_candidate_minus_recent30": {
+            "ci95_high": 0.026736162136658546,
+            "ci95_low": 0.021060869675533042,
+            "mean_difference": 0.023830439889302033,
+            "resamples": 2000,
+            "seed": 1729,
+            "users": 10556
+          },
+          "warm_catalog_users": 10556,
+          "future_target_users": 25193
+        }
+      }
+    },
+    {
+      "name": "catalog-search",
+      "method": "GET",
+      "path": "/v1/catalog?q=Portal&limit=5",
+      "status": 200,
+      "response": {
+        "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+        "count": 5,
+        "items": [
+          {
+            "item_id": "620",
+            "title": "Portal 2",
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Atmospheric",
+              "Co-op",
+              "Comedy",
+              "FPS",
+              "Female Protagonist",
+              "First-Person",
+              "Funny",
+              "Local Co-Op",
+              "Multiplayer",
+              "Online Co-Op",
+              "Platformer",
+              "Puzzle",
+              "Sci-fi",
+              "Science",
+              "Singleplayer",
+              "Space",
+              "Story Rich",
+              "Strategy"
+            ]
+          },
+          {
+            "item_id": "400",
+            "title": "Portal",
+            "genres": [
+              "Action"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Atmospheric",
+              "Classic",
+              "Comedy",
+              "Dark Humor",
+              "FPS",
+              "Female Protagonist",
+              "First-Person",
+              "Funny",
+              "Great Soundtrack",
+              "Physics",
+              "Platformer",
+              "Puzzle",
+              "Sci-fi",
+              "Science",
+              "Short",
+              "Singleplayer",
+              "Story Rich",
+              "Strategy"
+            ]
+          },
+          {
+            "item_id": "317400",
+            "title": "Portal Stories: Mel",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Free to Play"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Atmospheric",
+              "Co-op",
+              "Difficult",
+              "FPS",
+              "Female Protagonist",
+              "First-Person",
+              "Free to Play",
+              "Funny",
+              "Great Soundtrack",
+              "Indie",
+              "Mod",
+              "Multiplayer",
+              "Puzzle",
+              "Sci-fi",
+              "Science",
+              "Singleplayer",
+              "Story Rich",
+              "Strategy"
+            ]
+          },
+          {
+            "item_id": "384570",
+            "title": "Zanzarah: The Hidden Portal",
+            "genres": [
+              "Action",
+              "Adventure",
+              "RPG"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Fantasy",
+              "Female Protagonist",
+              "RPG"
+            ]
+          },
+          {
+            "item_id": "104600",
+            "title": "Portal 2 - The Final Hours",
+            "genres": [],
+            "tags": [
+              "Documentary",
+              "Singleplayer"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "popular-recent_popularity",
+      "method": "POST",
+      "path": "/v1/recommendations",
+      "request": {
+        "seed_item_ids": [
+          "550650",
+          "440",
+          "275850"
+        ],
+        "exclude_item_ids": [],
+        "genres": [],
+        "k": 5,
+        "model": "recent_popularity"
+      },
+      "status": 200,
+      "response": {
+        "request_id": "d43116bb-d153-4546-b2e5-79e135c67585",
+        "model_version": "portfolio-hybrid-content-popularity-v1",
+        "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+        "mode": "recent30_popularity",
+        "fallback_reason": null,
+        "unknown_seed_count": 0,
+        "duplicate_seed_count": 0,
+        "requested_k": 5,
+        "returned_count": 5,
+        "server_processing_ms": 6.0035716742277145,
+        "recommendations": [
+          {
+            "item_id": "414340",
+            "title": "Hellblade: Senua's Sacrifice",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Indie"
+            ],
+            "tags": [
+              "Action",
+              "Action-Adventure",
+              "Adventure",
+              "Atmospheric",
+              "Blood",
+              "Dark",
+              "Dark Fantasy",
+              "Fantasy",
+              "Female Protagonist",
+              "Hack and Slash",
+              "Horror",
+              "Indie",
+              "Mythology",
+              "Psychological",
+              "Realistic",
+              "Singleplayer",
+              "Story Rich",
+              "Third Person",
+              "Violent",
+              "Walking Simulator"
+            ],
+            "release_date": "2017-08-08",
+            "ranking_score": 83,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Adventure"
+              ],
+              "shared_tags": [
+                "Action",
+                "Adventure",
+                "Atmospheric",
+                "Indie",
+                "Singleplayer",
+                "Violent"
+              ],
+              "algorithm": "recent30_popularity"
+            }
+          },
+          {
+            "item_id": "350280",
+            "title": "LawBreakers",
+            "genres": [
+              "Action"
+            ],
+            "tags": [
+              "Action",
+              "Arena Shooter",
+              "Class-Based",
+              "Co-op",
+              "Competitive",
+              "Difficult",
+              "FPS",
+              "Fast-Paced",
+              "First-Person",
+              "Futuristic",
+              "Great Soundtrack",
+              "Indie",
+              "MOBA",
+              "Memes",
+              "Multiplayer",
+              "Online Co-Op",
+              "Sci-fi",
+              "Shooter",
+              "Strategy",
+              "Team-Based"
+            ],
+            "release_date": "2017-08-07",
+            "ranking_score": 73,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action"
+              ],
+              "shared_tags": [
+                "Action",
+                "Class-Based",
+                "Co-op",
+                "Competitive",
+                "FPS",
+                "First-Person",
+                "Indie",
+                "Multiplayer",
+                "Online Co-Op",
+                "Sci-fi",
+                "Shooter",
+                "Strategy",
+                "Team-Based"
+              ],
+              "algorithm": "recent30_popularity"
+            }
+          },
+          {
+            "item_id": "487120",
+            "title": "Citadel: Forged with Fire",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Early Access",
+              "Indie",
+              "Massively Multiplayer",
+              "RPG"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Base Building",
+              "Building",
+              "Crafting",
+              "Dragons",
+              "Early Access",
+              "Fantasy",
+              "First-Person",
+              "Indie",
+              "MMORPG",
+              "Magic",
+              "Massively Multiplayer",
+              "Medieval",
+              "Multiplayer",
+              "Open World",
+              "PvP",
+              "RPG",
+              "Sandbox",
+              "Survival"
+            ],
+            "release_date": "2017-07-26",
+            "ranking_score": 64,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Adventure",
+                "Early Access"
+              ],
+              "shared_tags": [
+                "Action",
+                "Adventure",
+                "Crafting",
+                "Early Access",
+                "First-Person",
+                "Indie",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Open World",
+                "PvP",
+                "Sandbox",
+                "Survival"
+              ],
+              "algorithm": "recent30_popularity"
+            }
+          },
+          {
+            "item_id": "346110",
+            "title": "ARK: Survival Evolved",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Indie",
+              "Massively Multiplayer",
+              "RPG"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Base Building",
+              "Building",
+              "Co-op",
+              "Crafting",
+              "Dinosaurs",
+              "Dragons",
+              "First-Person",
+              "Free to Play",
+              "Indie",
+              "MMORPG",
+              "Massively Multiplayer",
+              "Multiplayer",
+              "Open World",
+              "RPG",
+              "Sandbox",
+              "Sci-fi",
+              "Singleplayer",
+              "Survival"
+            ],
+            "release_date": "2017-08-29",
+            "ranking_score": 60,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Adventure"
+              ],
+              "shared_tags": [
+                "Action",
+                "Adventure",
+                "Co-op",
+                "Crafting",
+                "First-Person",
+                "Free to Play",
+                "Indie",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Open World",
+                "Sandbox",
+                "Sci-fi",
+                "Singleplayer",
+                "Survival"
+              ],
+              "algorithm": "recent30_popularity"
+            }
+          },
+          {
+            "item_id": "529180",
+            "title": "Dark and Light",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Early Access",
+              "Massively Multiplayer",
+              "RPG",
+              "Simulation"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Base Building",
+              "Crafting",
+              "Dark",
+              "Dragons",
+              "Early Access",
+              "Fantasy",
+              "MMORPG",
+              "Magic",
+              "Massively Multiplayer",
+              "Medieval",
+              "Multiplayer",
+              "Open World",
+              "PvP",
+              "RPG",
+              "Sandbox",
+              "Simulation",
+              "Singleplayer",
+              "Survival"
+            ],
+            "release_date": "2017-07-20",
+            "ranking_score": 59,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Adventure",
+                "Early Access"
+              ],
+              "shared_tags": [
+                "Action",
+                "Adventure",
+                "Crafting",
+                "Early Access",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Open World",
+                "PvP",
+                "Sandbox",
+                "Simulation",
+                "Singleplayer",
+                "Survival"
+              ],
+              "algorithm": "recent30_popularity"
+            }
+          }
+        ],
+        "feedback_enabled": false
+      }
+    },
+    {
+      "name": "popular-als",
+      "method": "POST",
+      "path": "/v1/recommendations",
+      "request": {
+        "seed_item_ids": [
+          "550650",
+          "440",
+          "275850"
+        ],
+        "exclude_item_ids": [],
+        "genres": [],
+        "k": 5,
+        "model": "als"
+      },
+      "status": 200,
+      "response": {
+        "request_id": "1370a1a8-8a0a-43e5-adaf-dc484c832fcd",
+        "model_version": "als-f32-r0p01-a10.0-s1729",
+        "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+        "mode": "implicit_als_validation_reference",
+        "fallback_reason": null,
+        "unknown_seed_count": 1,
+        "duplicate_seed_count": 0,
+        "requested_k": 5,
+        "returned_count": 5,
+        "server_processing_ms": 7.347816601395607,
+        "recommendations": [
+          {
+            "item_id": "301520",
+            "title": "Robocraft",
+            "genres": [
+              "Action",
+              "Free to Play",
+              "Indie",
+              "Massively Multiplayer",
+              "RPG",
+              "Simulation"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Building",
+              "Crafting",
+              "FPS",
+              "Free to Play",
+              "Funny",
+              "Indie",
+              "Massively Multiplayer",
+              "Multiplayer",
+              "Open World",
+              "PvP",
+              "RPG",
+              "Robots",
+              "Sandbox",
+              "Sci-fi",
+              "Shooter",
+              "Simulation",
+              "Strategy",
+              "Third-Person Shooter"
+            ],
+            "release_date": "2017-08-24",
+            "ranking_score": 0.2026001513004303,
+            "explanation": "Collaborative ALS score from games you selected; score is not a probability.",
+            "explanation_evidence": {
+              "algorithm": "implicit_als_validation_reference"
+            }
+          },
+          {
+            "item_id": "225080",
+            "title": "Brothers - A Tale of Two Sons",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Indie"
+            ],
+            "tags": [
+              "3D Vision",
+              "Action",
+              "Adventure",
+              "Atmospheric",
+              "Casual",
+              "Colorful",
+              "Controller",
+              "Fantasy",
+              "Great Soundtrack",
+              "Indie",
+              "Linear",
+              "Local Co-Op",
+              "Multiplayer",
+              "Platformer",
+              "Puzzle",
+              "Short",
+              "Singleplayer",
+              "Story Rich",
+              "Third Person",
+              "Walking Simulator"
+            ],
+            "release_date": "2013-09-03",
+            "ranking_score": 0.15323765575885773,
+            "explanation": "Collaborative ALS score from games you selected; score is not a probability.",
+            "explanation_evidence": {
+              "algorithm": "implicit_als_validation_reference"
+            }
+          },
+          {
+            "item_id": "391540",
+            "title": "Undertale",
+            "genres": [
+              "Indie",
+              "RPG"
+            ],
+            "tags": [
+              "2D",
+              "Bullet Hell",
+              "Choices Matter",
+              "Comedy",
+              "Cute",
+              "Dark",
+              "Dating Sim",
+              "Funny",
+              "Great Soundtrack",
+              "Horror",
+              "Indie",
+              "Memes",
+              "Multiple Endings",
+              "Pixel Graphics",
+              "Psychological Horror",
+              "RPG",
+              "Replay Value",
+              "Retro",
+              "Singleplayer",
+              "Story Rich"
+            ],
+            "release_date": "2015-09-15",
+            "ranking_score": 0.15087440609931946,
+            "explanation": "Collaborative ALS score from games you selected; score is not a probability.",
+            "explanation_evidence": {
+              "algorithm": "implicit_als_validation_reference"
+            }
+          },
+          {
+            "item_id": "4000",
+            "title": "Garry's Mod",
+            "genres": [
+              "Indie",
+              "Simulation"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Animation & Modeling",
+              "Building",
+              "Co-op",
+              "Comedy",
+              "FPS",
+              "First-Person",
+              "Funny",
+              "Indie",
+              "Massively Multiplayer",
+              "Mod",
+              "Moddable",
+              "Multiplayer",
+              "Online Co-Op",
+              "Physics",
+              "Sandbox",
+              "Shooter",
+              "Simulation",
+              "Singleplayer"
+            ],
+            "release_date": "2006-11-29",
+            "ranking_score": 0.14731818437576294,
+            "explanation": "Collaborative ALS score from games you selected; score is not a probability.",
+            "explanation_evidence": {
+              "algorithm": "implicit_als_validation_reference"
+            }
+          },
+          {
+            "item_id": "209000",
+            "title": "Batman™: Arkham Origins",
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "tags": [
+              "3D Vision",
+              "Action",
+              "Action-Adventure",
+              "Adventure",
+              "Atmospheric",
+              "Batman",
+              "Beat 'em up",
+              "Comic Book",
+              "Controller",
+              "Detective",
+              "Fighting",
+              "Multiplayer",
+              "Open World",
+              "Sandbox",
+              "Singleplayer",
+              "Stealth",
+              "Story Rich",
+              "Superhero",
+              "Third Person",
+              "Third-Person Shooter"
+            ],
+            "release_date": "2013-10-24",
+            "ranking_score": 0.12150237709283829,
+            "explanation": "Collaborative ALS score from games you selected; score is not a probability.",
+            "explanation_evidence": {
+              "algorithm": "implicit_als_validation_reference"
+            }
+          }
+        ],
+        "feedback_enabled": false
+      }
+    },
+    {
+      "name": "popular-champion",
+      "method": "POST",
+      "path": "/v1/recommendations",
+      "request": {
+        "seed_item_ids": [
+          "550650",
+          "440",
+          "275850"
+        ],
+        "exclude_item_ids": [],
+        "genres": [],
+        "k": 5,
+        "model": "champion"
+      },
+      "status": 200,
+      "response": {
+        "request_id": "d2844ef7-c1a3-437c-a02a-a2fe73190b9f",
+        "model_version": "portfolio-hybrid-content-popularity-v1",
+        "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+        "mode": "recent30_content_rank_fusion",
+        "fallback_reason": null,
+        "unknown_seed_count": 0,
+        "duplicate_seed_count": 0,
+        "requested_k": 5,
+        "returned_count": 5,
+        "server_processing_ms": 4.466993734240532,
+        "recommendations": [
+          {
+            "item_id": "304930",
+            "title": "Unturned",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Casual",
+              "Free to Play",
+              "Indie"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Atmospheric",
+              "Casual",
+              "Co-op",
+              "Crafting",
+              "FPS",
+              "First-Person",
+              "Free to Play",
+              "Horror",
+              "Indie",
+              "Massively Multiplayer",
+              "Multiplayer",
+              "Open World",
+              "Post-apocalyptic",
+              "Sandbox",
+              "Shooter",
+              "Singleplayer",
+              "Survival",
+              "Zombies"
+            ],
+            "release_date": "2017-07-07",
+            "ranking_score": 0.9991313219070435,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Adventure",
+                "Free to Play"
+              ],
+              "shared_tags": [
+                "Action",
+                "Adventure",
+                "Atmospheric",
+                "Co-op",
+                "Crafting",
+                "FPS",
+                "First-Person",
+                "Free to Play",
+                "Indie",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Open World",
+                "Sandbox",
+                "Shooter",
+                "Singleplayer",
+                "Survival"
+              ],
+              "algorithm": "recent30_content_rank_fusion"
+            }
+          },
+          {
+            "item_id": "444090",
+            "title": "Paladins®",
+            "genres": [
+              "Action",
+              "Early Access",
+              "Free to Play"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Anime",
+              "Co-op",
+              "Early Access",
+              "FPS",
+              "Fantasy",
+              "First-Person",
+              "Free to Play",
+              "Funny",
+              "MOBA",
+              "Massively Multiplayer",
+              "Memes",
+              "Multiplayer",
+              "Online Co-Op",
+              "PvP",
+              "Shooter",
+              "Strategy",
+              "Survival",
+              "Team-Based"
+            ],
+            "release_date": "2016-09-15",
+            "ranking_score": 0.999119758605957,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Early Access",
+                "Free to Play"
+              ],
+              "shared_tags": [
+                "Action",
+                "Adventure",
+                "Co-op",
+                "Early Access",
+                "FPS",
+                "First-Person",
+                "Free to Play",
+                "Funny",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Online Co-Op",
+                "PvP",
+                "Shooter",
+                "Strategy",
+                "Survival",
+                "Team-Based"
+              ],
+              "algorithm": "recent30_content_rank_fusion"
+            }
+          },
+          {
+            "item_id": "327690",
+            "title": "Gigantic",
+            "genres": [
+              "Action",
+              "Free to Play",
+              "Strategy"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Anime",
+              "Casual",
+              "Co-op",
+              "Controller",
+              "FPS",
+              "Fantasy",
+              "Free to Play",
+              "MOBA",
+              "Massively Multiplayer",
+              "Multiplayer",
+              "Open World",
+              "PvP",
+              "RPG",
+              "Shooter",
+              "Strategy",
+              "Team-Based",
+              "Third Person",
+              "Third-Person Shooter"
+            ],
+            "release_date": "2017-07-19",
+            "ranking_score": 0.9985174536705017,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Free to Play"
+              ],
+              "shared_tags": [
+                "Action",
+                "Adventure",
+                "Co-op",
+                "FPS",
+                "Free to Play",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Open World",
+                "PvP",
+                "Shooter",
+                "Strategy",
+                "Team-Based"
+              ],
+              "algorithm": "recent30_content_rank_fusion"
+            }
+          },
+          {
+            "item_id": "333930",
+            "title": "Dirty Bomb®",
+            "genres": [
+              "Action",
+              "Free to Play"
+            ],
+            "tags": [
+              "Action",
+              "Class-Based",
+              "Co-op",
+              "Competitive",
+              "Controller",
+              "FPS",
+              "Fast-Paced",
+              "Female Protagonist",
+              "First-Person",
+              "Free to Play",
+              "Gore",
+              "Massively Multiplayer",
+              "Multiplayer",
+              "Open World",
+              "Parkour",
+              "Post-apocalyptic",
+              "PvP",
+              "Shooter",
+              "Singleplayer",
+              "Team-Based"
+            ],
+            "release_date": null,
+            "ranking_score": 0.9982974529266357,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Free to Play"
+              ],
+              "shared_tags": [
+                "Action",
+                "Class-Based",
+                "Co-op",
+                "Competitive",
+                "FPS",
+                "First-Person",
+                "Free to Play",
+                "Gore",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Open World",
+                "PvP",
+                "Shooter",
+                "Singleplayer",
+                "Team-Based"
+              ],
+              "algorithm": "recent30_content_rank_fusion"
+            }
+          },
+          {
+            "item_id": "433850",
+            "title": "H1Z1",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Early Access",
+              "Massively Multiplayer"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Co-op",
+              "Early Access",
+              "FPS",
+              "First-Person",
+              "Gore",
+              "Horror",
+              "Massively Multiplayer",
+              "Multiplayer",
+              "Nudity",
+              "Online Co-Op",
+              "Open World",
+              "PvP",
+              "Shooter",
+              "Survival",
+              "Third-Person Shooter",
+              "Violent",
+              "Walking Simulator",
+              "Zombies"
+            ],
+            "release_date": "2016-02-17",
+            "ranking_score": 0.9972318410873413,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Adventure",
+                "Early Access"
+              ],
+              "shared_tags": [
+                "Action",
+                "Adventure",
+                "Co-op",
+                "Early Access",
+                "FPS",
+                "First-Person",
+                "Gore",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Online Co-Op",
+                "Open World",
+                "PvP",
+                "Shooter",
+                "Survival",
+                "Violent"
+              ],
+              "algorithm": "recent30_content_rank_fusion"
+            }
+          }
+        ],
+        "feedback_enabled": false
+      }
+    },
+    {
+      "name": "cold-start",
+      "method": "POST",
+      "path": "/v1/recommendations",
+      "request": {
+        "seed_item_ids": [],
+        "exclude_item_ids": [],
+        "genres": [],
+        "k": 5,
+        "model": "champion"
+      },
+      "status": 200,
+      "response": {
+        "request_id": "206dee0a-9de4-49d7-8ee2-47f98b06e8b2",
+        "model_version": "portfolio-hybrid-content-popularity-v1",
+        "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+        "mode": "recent30_popularity_fallback",
+        "fallback_reason": "no_known_seed_games",
+        "unknown_seed_count": 0,
+        "duplicate_seed_count": 0,
+        "requested_k": 5,
+        "returned_count": 5,
+        "server_processing_ms": 5.232885479927063,
+        "recommendations": [
+          {
+            "item_id": "550650",
+            "title": "Black Squad",
+            "genres": [
+              "Action",
+              "Early Access",
+              "Free to Play"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Co-op",
+              "Early Access",
+              "FPS",
+              "First-Person",
+              "Free to Play",
+              "Gore",
+              "Massively Multiplayer",
+              "Military",
+              "Multiplayer",
+              "Open World",
+              "PvP",
+              "Shooter",
+              "Singleplayer",
+              "Strategy",
+              "Tactical",
+              "Team-Based",
+              "Violent",
+              "War"
+            ],
+            "release_date": "2017-07-28",
+            "ranking_score": 148,
+            "explanation": "Ranked from your selected games' catalog features and recent review activity.",
+            "explanation_evidence": {
+              "shared_genres": [],
+              "shared_tags": [],
+              "algorithm": "recent30_popularity_fallback"
+            }
+          },
+          {
+            "item_id": "440",
+            "title": "Team Fortress 2",
+            "genres": [
+              "Action",
+              "Free to Play"
+            ],
+            "tags": [
+              "Action",
+              "Cartoon",
+              "Cartoony",
+              "Class-Based",
+              "Co-op",
+              "Comedy",
+              "Competitive",
+              "Crafting",
+              "FPS",
+              "First-Person",
+              "Free to Play",
+              "Funny",
+              "Moddable",
+              "Multiplayer",
+              "Online Co-Op",
+              "Robots",
+              "Shooter",
+              "Tactical",
+              "Team-Based",
+              "Trading"
+            ],
+            "release_date": "2007-10-10",
+            "ranking_score": 92,
+            "explanation": "Ranked from your selected games' catalog features and recent review activity.",
+            "explanation_evidence": {
+              "shared_genres": [],
+              "shared_tags": [],
+              "algorithm": "recent30_popularity_fallback"
+            }
+          },
+          {
+            "item_id": "275850",
+            "title": "No Man's Sky",
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Atmospheric",
+              "Crafting",
+              "Exploration",
+              "FPS",
+              "First-Person",
+              "Illuminati",
+              "Indie",
+              "Multiplayer",
+              "Open World",
+              "Procedural Generation",
+              "Psychological Horror",
+              "Sandbox",
+              "Sci-fi",
+              "Simulation",
+              "Singleplayer",
+              "Space",
+              "Space Sim",
+              "Survival"
+            ],
+            "release_date": "2016-08-12",
+            "ranking_score": 86,
+            "explanation": "Ranked from your selected games' catalog features and recent review activity.",
+            "explanation_evidence": {
+              "shared_genres": [],
+              "shared_tags": [],
+              "algorithm": "recent30_popularity_fallback"
+            }
+          },
+          {
+            "item_id": "414340",
+            "title": "Hellblade: Senua's Sacrifice",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Indie"
+            ],
+            "tags": [
+              "Action",
+              "Action-Adventure",
+              "Adventure",
+              "Atmospheric",
+              "Blood",
+              "Dark",
+              "Dark Fantasy",
+              "Fantasy",
+              "Female Protagonist",
+              "Hack and Slash",
+              "Horror",
+              "Indie",
+              "Mythology",
+              "Psychological",
+              "Realistic",
+              "Singleplayer",
+              "Story Rich",
+              "Third Person",
+              "Violent",
+              "Walking Simulator"
+            ],
+            "release_date": "2017-08-08",
+            "ranking_score": 83,
+            "explanation": "Ranked from your selected games' catalog features and recent review activity.",
+            "explanation_evidence": {
+              "shared_genres": [],
+              "shared_tags": [],
+              "algorithm": "recent30_popularity_fallback"
+            }
+          },
+          {
+            "item_id": "350280",
+            "title": "LawBreakers",
+            "genres": [
+              "Action"
+            ],
+            "tags": [
+              "Action",
+              "Arena Shooter",
+              "Class-Based",
+              "Co-op",
+              "Competitive",
+              "Difficult",
+              "FPS",
+              "Fast-Paced",
+              "First-Person",
+              "Futuristic",
+              "Great Soundtrack",
+              "Indie",
+              "MOBA",
+              "Memes",
+              "Multiplayer",
+              "Online Co-Op",
+              "Sci-fi",
+              "Shooter",
+              "Strategy",
+              "Team-Based"
+            ],
+            "release_date": "2017-08-07",
+            "ranking_score": 73,
+            "explanation": "Ranked from your selected games' catalog features and recent review activity.",
+            "explanation_evidence": {
+              "shared_genres": [],
+              "shared_tags": [],
+              "algorithm": "recent30_popularity_fallback"
+            }
+          }
+        ],
+        "feedback_enabled": false
+      }
+    },
+    {
+      "name": "unknown-id",
+      "method": "POST",
+      "path": "/v1/recommendations",
+      "request": {
+        "seed_item_ids": [
+          "unknown-demo-id"
+        ],
+        "exclude_item_ids": [],
+        "genres": [],
+        "k": 5,
+        "model": "champion"
+      },
+      "status": 200,
+      "response": {
+        "request_id": "d3b520c0-fb5e-4afd-8aea-951023316772",
+        "model_version": "portfolio-hybrid-content-popularity-v1",
+        "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+        "mode": "recent30_popularity_fallback",
+        "fallback_reason": "no_known_seed_games",
+        "unknown_seed_count": 1,
+        "duplicate_seed_count": 0,
+        "requested_k": 5,
+        "returned_count": 5,
+        "server_processing_ms": 5.25934062898159,
+        "recommendations": [
+          {
+            "item_id": "550650",
+            "title": "Black Squad",
+            "genres": [
+              "Action",
+              "Early Access",
+              "Free to Play"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Co-op",
+              "Early Access",
+              "FPS",
+              "First-Person",
+              "Free to Play",
+              "Gore",
+              "Massively Multiplayer",
+              "Military",
+              "Multiplayer",
+              "Open World",
+              "PvP",
+              "Shooter",
+              "Singleplayer",
+              "Strategy",
+              "Tactical",
+              "Team-Based",
+              "Violent",
+              "War"
+            ],
+            "release_date": "2017-07-28",
+            "ranking_score": 148,
+            "explanation": "Ranked from your selected games' catalog features and recent review activity.",
+            "explanation_evidence": {
+              "shared_genres": [],
+              "shared_tags": [],
+              "algorithm": "recent30_popularity_fallback"
+            }
+          },
+          {
+            "item_id": "440",
+            "title": "Team Fortress 2",
+            "genres": [
+              "Action",
+              "Free to Play"
+            ],
+            "tags": [
+              "Action",
+              "Cartoon",
+              "Cartoony",
+              "Class-Based",
+              "Co-op",
+              "Comedy",
+              "Competitive",
+              "Crafting",
+              "FPS",
+              "First-Person",
+              "Free to Play",
+              "Funny",
+              "Moddable",
+              "Multiplayer",
+              "Online Co-Op",
+              "Robots",
+              "Shooter",
+              "Tactical",
+              "Team-Based",
+              "Trading"
+            ],
+            "release_date": "2007-10-10",
+            "ranking_score": 92,
+            "explanation": "Ranked from your selected games' catalog features and recent review activity.",
+            "explanation_evidence": {
+              "shared_genres": [],
+              "shared_tags": [],
+              "algorithm": "recent30_popularity_fallback"
+            }
+          },
+          {
+            "item_id": "275850",
+            "title": "No Man's Sky",
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Atmospheric",
+              "Crafting",
+              "Exploration",
+              "FPS",
+              "First-Person",
+              "Illuminati",
+              "Indie",
+              "Multiplayer",
+              "Open World",
+              "Procedural Generation",
+              "Psychological Horror",
+              "Sandbox",
+              "Sci-fi",
+              "Simulation",
+              "Singleplayer",
+              "Space",
+              "Space Sim",
+              "Survival"
+            ],
+            "release_date": "2016-08-12",
+            "ranking_score": 86,
+            "explanation": "Ranked from your selected games' catalog features and recent review activity.",
+            "explanation_evidence": {
+              "shared_genres": [],
+              "shared_tags": [],
+              "algorithm": "recent30_popularity_fallback"
+            }
+          },
+          {
+            "item_id": "414340",
+            "title": "Hellblade: Senua's Sacrifice",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Indie"
+            ],
+            "tags": [
+              "Action",
+              "Action-Adventure",
+              "Adventure",
+              "Atmospheric",
+              "Blood",
+              "Dark",
+              "Dark Fantasy",
+              "Fantasy",
+              "Female Protagonist",
+              "Hack and Slash",
+              "Horror",
+              "Indie",
+              "Mythology",
+              "Psychological",
+              "Realistic",
+              "Singleplayer",
+              "Story Rich",
+              "Third Person",
+              "Violent",
+              "Walking Simulator"
+            ],
+            "release_date": "2017-08-08",
+            "ranking_score": 83,
+            "explanation": "Ranked from your selected games' catalog features and recent review activity.",
+            "explanation_evidence": {
+              "shared_genres": [],
+              "shared_tags": [],
+              "algorithm": "recent30_popularity_fallback"
+            }
+          },
+          {
+            "item_id": "350280",
+            "title": "LawBreakers",
+            "genres": [
+              "Action"
+            ],
+            "tags": [
+              "Action",
+              "Arena Shooter",
+              "Class-Based",
+              "Co-op",
+              "Competitive",
+              "Difficult",
+              "FPS",
+              "Fast-Paced",
+              "First-Person",
+              "Futuristic",
+              "Great Soundtrack",
+              "Indie",
+              "MOBA",
+              "Memes",
+              "Multiplayer",
+              "Online Co-Op",
+              "Sci-fi",
+              "Shooter",
+              "Strategy",
+              "Team-Based"
+            ],
+            "release_date": "2017-08-07",
+            "ranking_score": 73,
+            "explanation": "Ranked from your selected games' catalog features and recent review activity.",
+            "explanation_evidence": {
+              "shared_genres": [],
+              "shared_tags": [],
+              "algorithm": "recent30_popularity_fallback"
+            }
+          }
+        ],
+        "feedback_enabled": false
+      }
+    },
+    {
+      "name": "genre-filter",
+      "method": "POST",
+      "path": "/v1/recommendations",
+      "request": {
+        "seed_item_ids": [
+          "550650",
+          "440",
+          "275850"
+        ],
+        "exclude_item_ids": [],
+        "genres": [
+          "Strategy"
+        ],
+        "k": 5,
+        "model": "champion"
+      },
+      "status": 200,
+      "response": {
+        "request_id": "73a11a3c-a319-4d4b-acb8-fc11434c33d5",
+        "model_version": "portfolio-hybrid-content-popularity-v1",
+        "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+        "mode": "recent30_content_rank_fusion",
+        "fallback_reason": null,
+        "unknown_seed_count": 0,
+        "duplicate_seed_count": 0,
+        "requested_k": 5,
+        "returned_count": 5,
+        "server_processing_ms": 9.667875245213509,
+        "recommendations": [
+          {
+            "item_id": "327690",
+            "title": "Gigantic",
+            "genres": [
+              "Action",
+              "Free to Play",
+              "Strategy"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Anime",
+              "Casual",
+              "Co-op",
+              "Controller",
+              "FPS",
+              "Fantasy",
+              "Free to Play",
+              "MOBA",
+              "Massively Multiplayer",
+              "Multiplayer",
+              "Open World",
+              "PvP",
+              "RPG",
+              "Shooter",
+              "Strategy",
+              "Team-Based",
+              "Third Person",
+              "Third-Person Shooter"
+            ],
+            "release_date": "2017-07-19",
+            "ranking_score": 0.9994332790374756,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Free to Play"
+              ],
+              "shared_tags": [
+                "Action",
+                "Adventure",
+                "Co-op",
+                "FPS",
+                "Free to Play",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Open World",
+                "PvP",
+                "Shooter",
+                "Strategy",
+                "Team-Based"
+              ],
+              "algorithm": "recent30_content_rank_fusion"
+            }
+          },
+          {
+            "item_id": "440900",
+            "title": "Conan Exiles",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Early Access",
+              "Massively Multiplayer",
+              "RPG",
+              "Strategy"
+            ],
+            "tags": [
+              "Action",
+              "Adventure",
+              "Building",
+              "Co-op",
+              "Crafting",
+              "Early Access",
+              "Exploration",
+              "Fantasy",
+              "Gore",
+              "Massively Multiplayer",
+              "Multiplayer",
+              "Nudity",
+              "Online Co-Op",
+              "Open World",
+              "PvP",
+              "RPG",
+              "Sandbox",
+              "Singleplayer",
+              "Survival",
+              "Violent"
+            ],
+            "release_date": "2017-01-30",
+            "ranking_score": 0.9962390065193176,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Adventure",
+                "Early Access"
+              ],
+              "shared_tags": [
+                "Action",
+                "Adventure",
+                "Co-op",
+                "Crafting",
+                "Early Access",
+                "Exploration",
+                "Gore",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Online Co-Op",
+                "Open World",
+                "PvP",
+                "Sandbox",
+                "Singleplayer",
+                "Survival",
+                "Violent"
+              ],
+              "algorithm": "recent30_content_rank_fusion"
+            }
+          },
+          {
+            "item_id": "299740",
+            "title": "Miscreated",
+            "genres": [
+              "Action",
+              "Adventure",
+              "Early Access",
+              "Indie",
+              "Massively Multiplayer",
+              "RPG",
+              "Simulation",
+              "Strategy"
+            ],
+            "tags": [
+              "Action",
+              "Co-op",
+              "Crafting",
+              "Early Access",
+              "FPS",
+              "First-Person",
+              "Horror",
+              "Indie",
+              "MMORPG",
+              "Massively Multiplayer",
+              "Multiplayer",
+              "Open World",
+              "Post-apocalyptic",
+              "PvP",
+              "Sandbox",
+              "Simulation",
+              "Singleplayer",
+              "Survival",
+              "Walking Simulator",
+              "Zombies"
+            ],
+            "release_date": "2014-10-30",
+            "ranking_score": 0.9959814548492432,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Adventure",
+                "Early Access"
+              ],
+              "shared_tags": [
+                "Action",
+                "Co-op",
+                "Crafting",
+                "Early Access",
+                "FPS",
+                "First-Person",
+                "Indie",
+                "Massively Multiplayer",
+                "Multiplayer",
+                "Open World",
+                "PvP",
+                "Sandbox",
+                "Simulation",
+                "Singleplayer",
+                "Survival"
+              ],
+              "algorithm": "recent30_content_rank_fusion"
+            }
+          },
+          {
+            "item_id": "107410",
+            "title": "Arma 3",
+            "genres": [
+              "Action",
+              "Simulation",
+              "Strategy"
+            ],
+            "tags": [
+              "Action",
+              "Co-op",
+              "FPS",
+              "First-Person",
+              "Military",
+              "Moddable",
+              "Multiplayer",
+              "Online Co-Op",
+              "Open World",
+              "Realistic",
+              "Sandbox",
+              "Shooter",
+              "Simulation",
+              "Singleplayer",
+              "Strategy",
+              "Tactical",
+              "Team-Based",
+              "Third-Person Shooter",
+              "TrackIR",
+              "War"
+            ],
+            "release_date": "2013-09-12",
+            "ranking_score": 0.9951056241989136,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action"
+              ],
+              "shared_tags": [
+                "Action",
+                "Co-op",
+                "FPS",
+                "First-Person",
+                "Military",
+                "Moddable",
+                "Multiplayer",
+                "Online Co-Op",
+                "Open World",
+                "Sandbox",
+                "Shooter",
+                "Simulation",
+                "Singleplayer",
+                "Strategy",
+                "Tactical",
+                "Team-Based",
+                "War"
+              ],
+              "algorithm": "recent30_content_rank_fusion"
+            }
+          },
+          {
+            "item_id": "393380",
+            "title": "Squad",
+            "genres": [
+              "Action",
+              "Early Access",
+              "Indie",
+              "Strategy"
+            ],
+            "tags": [
+              "Action",
+              "Atmospheric",
+              "Co-op",
+              "Early Access",
+              "FPS",
+              "First-Person",
+              "Indie",
+              "Massively Multiplayer",
+              "Military",
+              "Multiplayer",
+              "Open World",
+              "RPG",
+              "Realistic",
+              "Shooter",
+              "Simulation",
+              "Strategy",
+              "Tactical",
+              "Team-Based",
+              "Walking Simulator",
+              "War"
+            ],
+            "release_date": "2015-12-14",
+            "ranking_score": 0.9925811290740967,
+            "explanation": "Shares the Action genre with your selected games.",
+            "explanation_evidence": {
+              "shared_genres": [
+                "Action",
+                "Early Access"
+              ],
+              "shared_tags": [
+                "Action",
+                "Atmospheric",
+                "Co-op",
+                "Early Access",
+                "FPS",
+                "First-Person",
+                "Indie",
+                "Massively Multiplayer",
+                "Military",
+                "Multiplayer",
+                "Open World",
+                "Shooter",
+                "Simulation",
+                "Strategy",
+                "Tactical",
+                "Team-Based",
+                "War"
+              ],
+              "algorithm": "recent30_content_rank_fusion"
+            }
+          }
+        ],
+        "feedback_enabled": false
+      }
+    },
+    {
+      "name": "no-matching-genre",
+      "method": "POST",
+      "path": "/v1/recommendations",
+      "request": {
+        "seed_item_ids": [
+          "550650",
+          "440",
+          "275850"
+        ],
+        "exclude_item_ids": [],
+        "genres": [
+          "__poc_no_such_genre__"
+        ],
+        "k": 5,
+        "model": "champion"
+      },
+      "status": 200,
+      "response": {
+        "request_id": "bea4e459-28f8-4a24-a906-a699b02674e8",
+        "model_version": "portfolio-hybrid-content-popularity-v1",
+        "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+        "mode": "recent30_content_rank_fusion",
+        "fallback_reason": "no_candidates_match_genres",
+        "unknown_seed_count": 0,
+        "duplicate_seed_count": 0,
+        "requested_k": 5,
+        "returned_count": 0,
+        "server_processing_ms": 13.372667133808136,
+        "recommendations": [],
+        "feedback_enabled": false
+      }
+    }
+  ]
+}

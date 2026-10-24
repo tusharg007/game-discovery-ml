@@ -1,0 +1,119 @@
+{
+  "recorded_at_utc": "2026-10-24T22:33:05.669Z",
+  "capture_date_local": "2026-10-25",
+  "timezone": "Asia/Calcutta",
+  "base_url": "https://game-discovery-ml.onrender.com",
+  "model_version": "portfolio-hybrid-content-popularity-v1",
+  "catalog_version": "2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841",
+  "popular_profile": {
+    "seed_item_ids": [
+      "550650",
+      "440",
+      "275850"
+    ],
+    "k": 5,
+    "genres": []
+  },
+  "note": "Original browser screenshots; section framing and scrolling only. No painted, generated, or substituted outputs. Desktop overview reused from earlier verified deployment session; exact earlier capture timestamp was not preserved. Other file modification times record saving during this walkthrough. Browser/UI and API capture are separate requests; timings and request IDs differ.",
+  "images": [
+    {
+      "file": "00-desktop-overview.jpg",
+      "description": "Verified desktop overview from earlier deployment session",
+      "source_url": "https://game-discovery-ml.onrender.com/",
+      "source_session": "earlier deployment verification",
+      "width": 854,
+      "height": 674,
+      "bytes": 44915,
+      "sha256": "e78e5fa006bc40d112a28f0418ed4d8edec667ba3509aedc2102c050872ae4a5",
+      "saved_at_utc": "2026-10-24T22:10:29.039Z"
+    },
+    {
+      "file": "01-discover.jpg",
+      "description": "Full Discover screen before selecting a profile",
+      "source_url": "https://game-discovery-ml.onrender.com/",
+      "source_session": "current walkthrough capture",
+      "width": 560,
+      "height": 1638,
+      "bytes": 97782,
+      "sha256": "3bb554a868890e40523977bc9fc71dbdc0a8c2c9851066492980f9c2c3b01bef",
+      "saved_at_utc": "2026-10-24T22:19:12.497Z"
+    },
+    {
+      "file": "02-selected-profile.jpg",
+      "description": "Popular three-seed profile and five-result controls",
+      "source_url": "https://game-discovery-ml.onrender.com/",
+      "source_session": "current walkthrough capture",
+      "width": 521,
+      "height": 763,
+      "bytes": 34639,
+      "sha256": "b65a07c61c614d81a9c86cef3db1071f559f06ae393f44926642bc42c818ed47",
+      "saved_at_utc": "2026-10-24T22:20:27.524Z"
+    },
+    {
+      "file": "03-recent-popularity.jpg",
+      "description": "Recent-popularity output for the popular profile",
+      "source_url": "https://game-discovery-ml.onrender.com/",
+      "source_session": "current walkthrough capture",
+      "width": 561,
+      "height": 651,
+      "bytes": 34476,
+      "sha256": "cc6749d7745b52407d792314e3bf48579b0e5ebe36ea0704b2df4c5a924a7f31",
+      "saved_at_utc": "2026-10-24T22:22:27.688Z"
+    },
+    {
+      "file": "04-als-reference.jpg",
+      "description": "ALS validation-era reference for the popular profile",
+      "source_url": "https://game-discovery-ml.onrender.com/",
+      "source_session": "current walkthrough capture",
+      "width": 561,
+      "height": 651,
+      "bytes": 33222,
+      "sha256": "81411b6b38a5412d4152f707e61570485c543dd2dd64abda57d69347777ae1e3",
+      "saved_at_utc": "2026-10-24T22:22:29.006Z"
+    },
+    {
+      "file": "05-selected-model.jpg",
+      "description": "Selected fusion output for the popular profile",
+      "source_url": "https://game-discovery-ml.onrender.com/",
+      "source_session": "current walkthrough capture",
+      "width": 561,
+      "height": 651,
+      "bytes": 34217,
+      "sha256": "d5d957c5a22d3f415fda71b8097140b4a6acbc32a3c0c8dc52bdfc8993343313",
+      "saved_at_utc": "2026-10-24T22:22:18.270Z"
+    },
+    {
+      "file": "06-evaluation.jpg",
+      "description": "Saved final-test evaluation loaded by the app",
+      "source_url": "https://game-discovery-ml.onrender.com/",
+      "source_session": "current walkthrough capture",
+      "width": 560,
+      "height": 987,
+      "bytes": 76479,
+      "sha256": "4a728067b4f7f0d82c787503dff3ad400c59c076464fff38a218c5b21359ab03",
+      "saved_at_utc": "2026-10-24T22:21:01.480Z"
+    },
+    {
+      "file": "07-cold-start.jpg",
+      "description": "Cold-start selected-model fallback banner",
+      "source_url": "https://game-discovery-ml.onrender.com/",
+      "source_session": "current walkthrough capture",
+      "width": 561,
+      "height": 651,
+      "bytes": 32860,
+      "sha256": "738e10e0f37c11bc66583501042d18574bb3abb723509caaf01179d5880705cb",
+      "saved_at_utc": "2026-10-24T22:24:19.948Z"
+    },
+    {
+      "file": "08-attribution.jpg",
+      "description": "Public source-attribution page",
+      "source_url": "https://game-discovery-ml.onrender.com/static/attribution.html",
+      "source_session": "current walkthrough capture",
+      "width": 560,
+      "height": 960,
+      "bytes": 94766,
+      "sha256": "6f14c3cbed12f8515972d686cf10020dc1849f3ac3a39c00651ab942a5743538",
+      "saved_at_utc": "2026-10-24T22:25:01.213Z"
+    }
+  ]
+}

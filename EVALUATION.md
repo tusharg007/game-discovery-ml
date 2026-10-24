@@ -1,6 +1,6 @@
 # Evaluation — future review-interaction ranking
 
-Status: M3 validation comparisons completed locally on 2026-10-25. The final test partition has not been evaluated.
+Status: validation selection was frozen before the one-time final-test evaluation on 2026-10-25. The results below are served as a saved aggregate in the live Render application.
 
 ## Data and split
 
@@ -12,7 +12,7 @@ The current experiment uses the stable-hash portfolio sample: 100,134 selected u
 | Validation | Cutoff A through day before cutoff B | 40,180 | 2017-01-28–2017-08-21 |
 | Test | Cutoff B onward | 40,201 | 2017-08-22–2018-01-05 |
 
-The split manifest and each Parquet partition have SHA-256 hashes in local, ignored `artifacts/manifests/split_manifest.json`. Validation models fit only on events before cutoff A. The `test` command is gated until validation selection is frozen; no test metrics have been opened.
+The split manifest and each Parquet partition have SHA-256 hashes in local, ignored `artifacts/manifests/split_manifest.json`. Validation models fit only on events before cutoff A. The `test` command was gated until validation selection was frozen; the one-time final result is reported separately below.
 
 ## Catalog and users
 
@@ -82,4 +82,4 @@ uv run game-discovery verify-release --bundle models/release/selected_candidate
 uv run game-discovery evaluate --split test --config configs/portfolio.yaml
 ```
 
-The baseline report and per-user bootstrap contributions are under ignored `artifacts/reports/validation_baselines.json` and `private/evaluation/validation_baselines.parquet`. Per-user values contain private pseudonymous user keys and must remain local. Aggregate outputs remain local until data-derived publication permission is resolved.
+The baseline report and per-user bootstrap contributions are under ignored `artifacts/reports/validation_baselines.json` and `private/evaluation/validation_baselines.parquet`. Per-user values contain private pseudonymous user keys and must remain local. The owner-authorized demo exposes saved aggregate evaluation, item artifacts, and the historical catalog. [DATA_CARD.md](DATA_CARD.md) records source-terms uncertainty and decision scope. The [POC API capture](docs/evidence/live-api.json) reads that existing aggregate without rerunning the final test.
