@@ -4,9 +4,9 @@ Updated: 2026-10-24 (Asia/Calcutta)
 
 Source plan: `E:\Game Discovery\GAME_DISCOVERY_IMPLEMENTATION_PLAN.md` (kept outside this separate repository).
 
-## Current milestone: M2 — Honest evaluation
+## Current milestone: M3 — Learned ranking
 
-M0 and M1 have passed their local gates. No model training or evaluation has been run.
+M0, M1 and the M2 split/baseline gates have passed locally. The final test partition remains unopened.
 
 ## M0 — Bootstrap
 
@@ -42,12 +42,23 @@ M0 and M1 have passed their local gates. No model training or evaluation has bee
 
 The UCSD page requests citation but does not state an explicit redistribution license. Source data and derived reports are local only. Prepared interactions exclude Steam usernames and review text; the private HMAC key and malformed-line quarantine are also local and ignored. Resolve publication rights before publishing data-derived artifacts. No Azure account was inspected or changed.
 
+## M2 — Honest evaluation
+
+- Commands: `uv run game-discovery data split --config configs/portfolio.yaml`; then `uv run game-discovery evaluate --split validation --config configs/portfolio.yaml`.
+- Frozen global whole-date split: cutoff A `2017-01-28`, cutoff B `2017-08-22`; 187,153 train, 40,180 validation and 40,201 test events. Each split and source sample has a SHA-256 in ignored `artifacts/manifests/split_manifest.json` (manifest SHA-256 `2ce5fc7db7f31ffcea7c06a827b46493aa7f9f738cf409c15ffdc70008eed841`).
+- Validation evaluated 23,864 future-target users over the 7,266-item pre-cutoff catalog. Warm metrics cover 8,833 users; 9,358 targets are outside the catalog, 4,904 users have no reachable target and 12,821 have no training history.
+- Baselines use the same users/catalog/exclusions. Warm NDCG@10: random `0.00002`, global popularity `0.04021`, recent-30-day `0.05146`, recent-90-day `0.04998`.
+- Paired user-bootstrap (2,000, seed 1729) NDCG@10 differences vs global popularity: recent-30-day `+0.01125` (95% CI `+0.00835` to `+0.01405`); recent-90-day `+0.00977` (`+0.00701` to `+0.01257`).
+- Results, reachability, exposure and reproduction details are in [EVALUATION.md](EVALUATION.md). Per-user contributions remain private in ignored `private/evaluation/validation_baselines.parquet`.
+- `uv run pytest --basetemp tests/.pytest-tmp -q` — 8 passed; Ruff check and format check passed.
+- Test outcomes have not been evaluated. The final-test command is gated until a selection record is frozen.
+
 ## Next actions
 
-1. Freeze chronological cutoffs from the portfolio sample before model evaluation; write and hash the split manifest.
-2. Implement hand-checked ranking metrics and uniform, global-popularity and recent-popularity baselines on identical users/catalogs.
-3. Keep validation and final-test data separated; do not inspect test results before a selection record is frozen.
+1. Train item-item cosine and CPU implicit ALS models using training events only; verify ALS confidence convention and CPU smoke training.
+2. Evaluate against validation with the frozen warm/all-target catalog contracts and compare to the strongest popularity baseline.
+3. Add the separately labeled static-metadata TF-IDF reference and validation ablations before freezing selection.
 
 ## Evidence integrity
 
-No evaluation scores, model results, UI screenshots, resource IDs, actual cloud costs, deployment URL or cloud verification are claimed.
+No learned-model scores, UI screenshots, resource IDs, actual cloud costs, deployment URL or cloud verification are claimed.

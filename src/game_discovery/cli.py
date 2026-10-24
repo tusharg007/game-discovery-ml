@@ -18,6 +18,8 @@ from game_discovery import __version__
 from game_discovery.data.download import FILES, download_one, verify_download
 from game_discovery.data.parse import prepare_interactions, prepare_items
 from game_discovery.data.quality import prepare_quality
+from game_discovery.data.split import freeze_global_split
+from game_discovery.evaluation.baselines import evaluate_validation_baselines
 
 
 def _doctor() -> int:
@@ -209,6 +211,36 @@ def _data_prepare(config_path: Path) -> int:
     return 0
 
 
+def _data_split(config_path: Path) -> int:
+    config, root = _load_config(config_path)
+    mode = str(config.get("mode", "smoke"))
+    processed = root / config.get("paths", {}).get("processed", "data/processed")
+    manifest = freeze_global_split(
+        processed / mode / "interactions.parquet",
+        processed / "splits" / mode,
+        root / "artifacts/manifests/split_manifest.json",
+    )
+    print(json.dumps(manifest, indent=2, sort_keys=True, default=str))
+    return 0
+
+
+def _evaluate(split: str, config_path: Path) -> int:
+    if split != "validation":
+        raise RuntimeError(
+            "Final test evaluation is gated until a frozen validation selection record exists"
+        )
+    config, root = _load_config(config_path)
+    mode = str(config.get("mode", "smoke"))
+    report = evaluate_validation_baselines(
+        root / "data/processed/splits" / mode,
+        root / "artifacts/manifests/split_manifest.json",
+        root / "artifacts/reports/validation_baselines.json",
+        root / "private/evaluation/validation_baselines.parquet",
+    )
+    print(json.dumps(report, indent=2, sort_keys=True, default=str))
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="game-discovery",
@@ -228,6 +260,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         "prepare", help="Parse files and produce private Parquet plus quality reports."
     )
     prepare.add_argument("--config", type=Path, required=True)
+    split_command = data_commands.add_parser(
+        "split", help="Freeze global chronological windows from the configured sample."
+    )
+    split_command.add_argument("--config", type=Path, required=True)
+    evaluate = commands.add_parser("evaluate", help="Evaluate models on a frozen temporal split.")
+    evaluate.add_argument("--split", choices=("validation", "test"), required=True)
+    evaluate.add_argument("--config", type=Path, default=Path("configs/portfolio.yaml"))
     args = parser.parse_args(argv)
     if args.command == "doctor":
         return _doctor()
@@ -235,6 +274,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _data_download(args.config, args.source)
     if args.command == "data" and args.data_command == "prepare":
         return _data_prepare(args.config)
+    if args.command == "data" and args.data_command == "split":
+        return _data_split(args.config)
+    if args.command == "evaluate":
+        return _evaluate(args.split, args.config)
     return 2
 
 
