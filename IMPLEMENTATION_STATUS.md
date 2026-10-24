@@ -4,9 +4,9 @@ Updated: 2026-10-25 (Asia/Calcutta)
 
 Source plan: `E:\Game Discovery\GAME_DISCOVERY_IMPLEMENTATION_PLAN.md` (kept outside this separate repository).
 
-## Current milestone: M6 — Lifecycle (local evidence complete; cloud event store gated)
+## Current milestone: M7 — Render preparation (local checks passed; data publication gated)
 
-M0–M5 have passed locally. M3 selection was frozen before the single M4 final-test run. Local M6 monitoring and promotion work is implemented; cloud feedback remains disabled because no protected free account is confirmed. The product remains local and no cloud deployment is claimed.
+M0–M5 have passed locally. M3 selection was frozen before the single M4 final-test run. Local M6 monitoring and promotion work is implemented. On 2026-10-25 the owner selected Render Free; its signed-in Hobby workspace has no card on file. The actual app passed the local Render resource-cap smoke. The owner confirmed no additional data-use permission was obtained, so real model/catalog assets remain local. Feedback is disabled and no cloud deployment is claimed.
 
 ## M0 — Bootstrap
 
@@ -133,3 +133,13 @@ No cloud resource IDs, actual cloud costs, deployment URL or cloud verification 
 4. Run the CI workflow from a fresh clone and complete the release evidence audit. Never rerun the one-time final test or use it to promote/reselect a candidate.
 - Template validation detail: PowerShell parser validation passed. The local Azure CLI could not bootstrap its Bicep compiler (it produced a locked zero-byte executable), so Bicep compilation and Azure `what-if` remain unverified. The host npm shim also points to a missing `npm-cli.js`; M6 frontend build/audit evidence remains valid, while the newly authored CI workflow has not run on GitHub.
 - Rechecked the publisher lab dataset page on 2026-10-25: it still requests citation but provides no explicit redistribution license on the accessible page; the primary CSE dataset page timed out. Updated [DATA_CARD.md](DATA_CARD.md); derived publication rights remain unresolved.
+
+### Render preparation — 2026-10-25
+
+- Owner selected Render Free, replacing the Azure student-account route for the intended launch. Read-only dashboard evidence shows Hobby, no card on file, $0 accrued month-to-date charges, and available shared quotas. Sanitized account evidence is ignored in `artifacts/deployment/render_preflight.json`. No Render service has been created and no real-data image has been pushed.
+- Added `deploy/render/prepare.py` and the Render deployment/rollback/shutdown procedure. The local packager verifies exact champion/ALS file hashes, privacy flags and saved-test split identity. It writes only the seven allowlisted serving assets into an ignored archive. The Blueprint generator requires a digest-pinned registry image and enforces exactly one Free image-backed web service. No database, disk, worker or paid plan is requested.
+- Local release archive: 2,396,039 bytes; SHA-256 `ec21ef05a0c8f9780ed02e108e2c0575eca44214b3e79b8744c62483ed191193`. Manifest is ignored at `artifacts/deployment/render_release_manifest.json`. This is staging evidence, not publication approval.
+- Built a Linux amd64 candidate tagged `game-discovery:render`, local image ID `sha256:be3916600fe931b5ec3de747d02973de3d13e1bee9598d50dd4fcabaebd24a57`. Docker disconnected during export, but the resulting image was inspected and successfully run after the engine recovered. The existing local app was also stopped by that engine event and has been restored. No registry digest or pushed image is claimed.
+- The actual candidate passed 45 HTTP smoke requests under 0.1 CPU, a 512,000,000-byte memory cap, no swap and one worker. Cases cover popular/tail/sparse/cold/unknown profiles, 20-seed inputs, champion/popularity/ALS rankings, unique seed-excluding results, static assets/model readiness and disabled feedback (503, persisted false). Peak cgroup memory was 170,541,056 bytes, current 154,730,496 bytes, no OOM kill; measurements include the smoke client in the same cgroup. Saved ignored `render_local_smoke.json` and `render_memory_check.json`. This is not a Render cloud benchmark.
+- 39 tests passed with intended one-thread numerical settings; Ruff passed. An initial full run hit a transient pandas import failure in an existing ALS test; the isolated ALS tests and then full suite passed. The Docker build passed frontend typecheck and Vite build. Container entrypoint now uses `exec` for signal delivery. The UI badge says historical research demo so it remains accurate on a hosted deployment.
+- Public launch is blocked by the specific source-data gate in plan section 3.3 / `DATA_CARD.md`, not by Render account access. The owner stated no additional permission has been obtained. Continue code-only publication and clean-checkout validation; do not upload the real serving archive, model, catalog or real-data image until that gate is resolved.

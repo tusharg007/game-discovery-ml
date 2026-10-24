@@ -2,7 +2,13 @@
 
 ## Current state
 
-The Docker image and local HTTP application were verified on 2026-10-25. No cloud URL or cloud deployment exists. The Azure account preflight did not confirm an Azure for Students offer or spending limit; GCP and AWS account eligibility is unknown. The deployment scripts therefore fail closed until a protected zero-out-of-pocket gate is recorded and checked. Do not upgrade billing or remove a spending limit to make them pass.
+The owner selected **Render Free** on 2026-10-25. The signed-in workspace is Hobby, with no card on file and available shared free usage. The exact real-data app passed a local 45-request smoke at 0.1 CPU and a 512,000,000-byte memory limit with no swap. Peak cgroup memory, including the smoke client, was 170,541,056 bytes. This verifies local feasibility; no Render service or HTTPS deployment exists yet.
+
+See [the Render deployment procedure](deploy/render/README.md). Serving assets are hash-verified and staged in an ignored local archive. The owner confirmed no additional data-use permission has been obtained, so `DATA_CARD.md`'s publication gate remains open and the real-data image has not been uploaded. The generated Blueprint requires an actual pushed registry image digest; no local image ID is presented as a registry digest. Feedback remains disabled.
+
+## Azure template (retained alternative)
+
+The earlier Azure preflight did not confirm an Azure for Students offer or spending limit; GCP and AWS eligibility remains unknown. Azure scripts continue to fail closed until their own account gate passes. Do not upgrade billing or remove a spending limit to make them pass.
 
 The Azure template in `deploy/azure/main.bicep` creates one Consumption Container Apps environment and one app. It does not create storage, a registry, a workspace, a network, or a paid domain. Event persistence is not wired to Azure and feedback remains disabled. The app uses 0.25 vCPU / 0.5 GiB, zero minimum and one maximum replica, HTTPS ingress, single revision, and no persistent log ingestion. The selected image must be pinned by digest.
 

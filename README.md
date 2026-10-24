@@ -34,7 +34,7 @@ The data pipeline streams bounded records, validates and deduplicates earliest u
 
 Local synthetic drift replay, a validation-only candidate rejection, and synthetic promotion/rollback checks are saved in ignored reports. These are demonstrations, not real-user monitoring. Feedback is visibly disabled in the app because there is no durable event store. The local rate limiter is process scoped and not a billing cap.
 
-An Azure Container Apps template and PowerShell/Bash wrappers are locally authored, with a narrow resource allowlist and explicit destructive flag. They have not been applied. The account check did not establish a protected free offer or spending limit; GCP/AWS eligibility is unverified. The container uses a local image digest, not a published registry digest. See [DEPLOYMENT.md](DEPLOYMENT.md), [COSTS.md](COSTS.md), and [RUNBOOK.md](RUNBOOK.md) for status and shutdown procedure.
+Render Free is the selected hosting route. The actual app passed a local 45-request smoke at 0.1 CPU under a 512 MB memory cap; measured peak memory was about 171 MB, including the smoke client. The signed-in Render account is Hobby with no card on file. An allowlisted release packager and image-backed Blueprint generator are ready, but the real-data model/catalog remain local until the data-use gate is resolved. There is no live Render URL or cloud benchmark. Azure templates remain an unused alternative. See [DEPLOYMENT.md](DEPLOYMENT.md), [COSTS.md](COSTS.md), and [RUNBOOK.md](RUNBOOK.md) for status and shutdown procedure.
 
 ## Reproduce locally
 
